@@ -1,0 +1,18 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: action
+name: 'Kaniko build and push'
+description: 'Build and publish Docker images from a Dockerfile using Kaniko'
+inputs:
+  dockerconfigjson:
+    description: 'Dockerconfigjson contains the registry and registry credentials'
+  dockerfile:
+    description: 'Path to the Dockerfile'
+  context:
+    description: 'Docker build context'
+    default: ${{ cloudbees.workspace }}
+  destination: 
+    description: 'Target image(s) that will be published to the registries configured in the dockerconfigjson'
+  build-args:
+    description: 'Docker build arguments'
+  labels:
+    description: 'Metadata to be associated with the resulting image'
