@@ -1,0 +1,32 @@
+== Cloudbees action for building and publishing docker images using kaniko
+
+This action can be used to build and publish Docker images using link:https://github.com/GoogleContainerTools/kaniko#kaniko---build-images-in-kubernetes[kaniko] .
+
+
+=== Usage
+
+[source,yaml]
+----
+- uses: cloudbees-io/kaniko@v1
+  with:
+    # dockerconfigjson contains the docker registry credentials. The format of the JSON is as shown below:
+    # {"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}} where the auth field is base64 encoded.
+    # You can pass multiple registry credentials in the same JSON.
+    dockerconfigjson: ${{ secrets.dockerconfigjson }}
+    # dockerfile is the path to the Dockerfile to be built.
+    dockerfile: Dockerfile
+    # context is the path to the build context.
+    context: .
+    # destinations are the target images that will be published.
+    destinations: 
+      - <registry host>/<image name>:1.0.1
+      - <registry host>/<image name>:latest
+    # build_args are the build arguments that will be passed to the kaniko build.
+    build-args:
+      BUILDKIT_CONTEXT_KEEP_GIT_DIR: 1
+      BUILDKIT_INLINE_CACHE: 1
+    # labels are the metadata that will be added to the final image.
+    labels:
+      maintaner: John Smith
+      version: 1.0.1
+----
