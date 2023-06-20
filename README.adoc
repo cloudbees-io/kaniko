@@ -12,21 +12,21 @@ This action can be used to build and publish Docker images using link:https://gi
     # dockerconfigjson contains the docker registry credentials. The format of the JSON is as shown below:
     # {"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}} where the auth field is base64 encoded.
     # You can pass multiple registry credentials in the same JSON.
+    # Required: true
     dockerconfigjson: ${{ secrets.dockerconfigjson }}
     # dockerfile is the path to the Dockerfile to be built.
     dockerfile: Dockerfile
     # context is the path to the build context.
     context: .
     # destination is the target image that will be published. Its a List, so you can pass multiple images.
-    destination: |
-      <registry host>/<image name>:1.0.1
-      <registry host>/<image name>:latest
+    # Required: true
+    # Type: CSV
+    destination: <registry host>/<image name>:1.0.1,<registry host>/<image name>:latest
     # build_args are the build arguments that will be passed to the kaniko build. Its a List, so you can pass multiple build arguments.
-    build-args: |
-      BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
-      BUILDKIT_INLINE_CACHE=1
+    # Type: CSV
+    build-args: BUILDKIT_CONTEXT_KEEP_GIT_DIR=1,BUILDKIT_INLINE_CACHE=1
     # labels are the metadata that will be added to the final image. Its a List, so you can pass multiple labels.
-    labels: |
-      maintaner=John Smith
-      version=1.0.1
+    # Type: CSV
+    labels: maintaner=John Smith,version=1.0.1
+      
 ----
