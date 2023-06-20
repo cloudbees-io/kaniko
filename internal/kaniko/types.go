@@ -1,12 +1,17 @@
 package kaniko
 
+import "context"
+
 type Config struct {
+	context.Context
+	// ExecutablePath is the path to the Kaniko executor binary.
+	ExecutablePath string
 	// Dockerconfigjson contains the registry and registry credentials
 	DockerConfigJson string `json:"dockerconfigjson,omitempty"`
 	// Dockerfile is the path to the Dockerfile to build.
 	Dockerfile string `json:"dockerfile,omitempty"`
 	// Context is the path to the build context.
-	Context string `json:"context,omitempty"`
+	DockerContext string `json:"context,omitempty"`
 	// Destination is the destination of the built image.
 	Destination string `json:"destination,omitempty"`
 	// BuildArgs are the args passed to the Docker build.

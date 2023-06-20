@@ -5,6 +5,7 @@ description: 'Build and publish Docker images from a Dockerfile using Kaniko'
 inputs:
   dockerconfigjson:
     description: 'Dockerconfigjson contains the registry and registry credentials'
+    required: true
   dockerfile:
     description: 'Path to the Dockerfile'
     default: Dockerfile
