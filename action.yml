@@ -7,18 +7,36 @@ inputs:
     description: 'Dockerconfigjson contains the registry and registry credentials'
   dockerfile:
     description: 'Path to the Dockerfile'
+    default: Dockerfile
   context:
     description: 'Docker build context'
     default: ${{ cloudbees.workspace }}
   destination: 
-    description: 'Target image(s) that will be published to the registries configured in the dockerconfigjson'
+    description: >
+      Target image(s) that will be published to the registries configured in the dockerconfigjson.
+      Type: CSV
+    required: true
   build-args:
-    description: 'Docker build arguments'
+    description: >
+      Docker build arguments.
+      Type: CSV
   labels:
-    description: 'Metadata to be associated with the resulting image'
+    description: >
+      Metadata to be associated with the resulting image.
+      Type: CSV
 runs:
   using: composite
   steps:
     - id: build-and-publish-docker-image
       name: Build and publish Docker image
       uses: docker://registry.saas-dev.beescloud.com/staging/kaniko-action:latest
+      shell: bash
+      run:
+        kaniko-action \
+        --dockerconfigjson '${{ inputs.dockerconfigjson }}' \
+        --dockerfile "${{ inputs.dockerfile }}" \
+        --context "${{ inputs.context }}" \
+        --destination "${{ inputs.destination }}" \
+        --build-args "${{ inputs.build-args }}" \
+        --labels "${{ inputs.labels }}"
+
