@@ -17,6 +17,7 @@ const (
 )
 
 func (k *Config) Run(ctx context.Context) error {
+	k.Context = ctx
 	if err := k.validateDockerConfigJson(); err != nil {
 		return fmt.Errorf("dockerConfigJson validation failed: %w", err)
 	}
@@ -58,6 +59,7 @@ func (k *Config) lookupBinary() {
 	if err != nil {
 		log.Fatal("cannot find kaniko executor binary")
 	}
+	log.Printf("found kaniko executor binary at %s", execPath)
 	k.ExecutablePath = execPath
 }
 
@@ -99,6 +101,9 @@ func (k *Config) cmdBuilder() (*exec.Cmd, error) {
 
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)
 	kanikoCmd.Env = k.env()
+
+	kanikoCmd.Stdout = os.Stdout
+	kanikoCmd.Stderr = os.Stderr
 
 	return kanikoCmd, nil
 }
