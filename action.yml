@@ -32,5 +32,5 @@ runs:
       name: Build and publish Docker image
       uses: docker://registry.saas-dev.beescloud.com/staging/kaniko-action:latest
       run: 
-        kaniko-action --dockerconfigjson ${{ inputs.dockerconfigjson }} --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --build-args "${{ inputs.build-args }}" --labels "${{ inputs.labels }}"
+        kaniko-action --dockerconfigjson '${{ inputs.dockerconfigjson }}' --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --build-args "${{ inputs.build-args }}" --labels "${{ inputs.labels }}"
 
