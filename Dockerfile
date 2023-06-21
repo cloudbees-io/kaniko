@@ -14,4 +14,7 @@ FROM gcr.io/kaniko-project/executor:v1.11.0
 
 COPY --from=build /usr/local/bin/kaniko-action /usr/local/bin/kaniko-action
 
+# https://cloudbees.atlassian.net/browse/SDP-5475
+COPY --from=build /tmp /tmp
+
 ENTRYPOINT ["kaniko-action"]
