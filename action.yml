@@ -33,5 +33,6 @@ runs:
       uses: docker://registry.saas-dev.beescloud.com/staging/kaniko-action:latest
       run: |
         set -x
-        kaniko-action --dockerconfigjson '{"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}}' --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --build-args "${{ inputs.build-args }}" --labels "${{ inputs.labels }}"
-
+        kaniko-action --dockerconfigjson ${DOCKERCONFIGJSON} --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --build-args "${{ inputs.build-args }}" --labels "${{ inputs.labels }}"
+      env:
+        DOCKERCONFIGJSON: "{\"auths\":{\"<registry host>\":{\"username\":\"<username>\",\"password\":\"<password>\",\"auth\":\"<username>:<password>\"}}}"
