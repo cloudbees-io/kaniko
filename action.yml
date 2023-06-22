@@ -11,7 +11,7 @@ inputs:
     default: Dockerfile
   context:
     description: 'Docker build context'
-    default: ${{ cloudbees.workspace }}
+    default: ${CLOUDBEES_WORKSPACE}
   destination: 
     description: >
       Target image(s) that will be published to the registries configured in the dockerconfigjson.
