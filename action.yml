@@ -34,9 +34,11 @@ runs:
       run: |
         set -x
         kaniko-action \
-        --dockerconfigjson '${{ inputs.dockerconfigjson }}' \
+        --dockerconfigjson ${DOCKERCONFIGJSON} \
         --dockerfile ${{ inputs.dockerfile }} \
         --context ${{ inputs.context }} \
         --destination ${{ inputs.destination }} \
         --build-args ${{ inputs.build-args }} \
         --labels ${{ inputs.labels }}
+      env:
+        DOCKERCONFIGJSON: ${{ inputs.dockerconfigjson }}
