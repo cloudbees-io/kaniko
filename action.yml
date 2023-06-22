@@ -3,9 +3,6 @@ kind: action
 name: 'Kaniko build and push'
 description: 'Build and publish Docker images from a Dockerfile using Kaniko'
 inputs:
-  # dockerconfigjson:
-  #   description: 'Dockerconfigjson contains the registry and registry credentials'
-  #   required: true
   dockerfile:
     description: 'Path to the Dockerfile'
     default: Dockerfile
@@ -31,14 +28,5 @@ runs:
     - id: build-and-publish-docker-image
       name: Build and publish Docker image
       uses: docker://registry.saas-dev.beescloud.com/staging/kaniko-action:latest
-      run: |
-        set -x
-        kaniko-action \
-        --dockerconfigjson ${DOCKERCONFIGJSON} \
-        --dockerfile ${{ inputs.dockerfile }} \
-        --context ${{ inputs.context }} \
-        --destination ${{ inputs.destination }} \
-        --build-args ${{ inputs.build-args }} \
-        --labels ${{ inputs.labels }}
-      # env:
-      #   DOCKERCONFIGJSON: ${{ inputs.dockerconfigjson }}
+      entrypoint: kaniko-action
+      args: --dockerconfigjson ${DOCKERCONFIGJSON} --dockerfile ${{ inputs.dockerfile }} --context ${{ inputs.context }} --destination ${{ inputs.destination }} --build-args ${{ inputs.build-args }} --labels ${{ inputs.labels }}
