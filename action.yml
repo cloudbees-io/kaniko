@@ -30,4 +30,4 @@ runs:
       uses: docker://registry.saas-dev.beescloud.com/staging/kaniko-action:latest
       with:
         entrypoint: kaniko-action
-        args: --dockerconfigjson ${DOCKERCONFIGJSON} --dockerfile ${{ inputs.dockerfile }} --context ${{ inputs.context }} --destination ${{ inputs.destination }} --build-args ${{ inputs.build-args }} --labels ${{ inputs.labels }}
+        args: --dockerfile ${{ inputs.dockerfile }} --context ${{ inputs.context }} --destination ${{ inputs.destination }} --build-args ${{ inputs.build-args }} --labels ${{ inputs.labels }}
