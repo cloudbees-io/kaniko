@@ -3,6 +3,8 @@ kind: action
 name: 'Kaniko build and push'
 description: 'Build and publish Docker images from a Dockerfile using Kaniko'
 inputs:
+  dockerconfigjson:
+    description: 'Dockerconfigjson contains the registry and registry credentials'
   dockerfile:
     description: 'Path to the Dockerfile'
     default: Dockerfile
@@ -31,3 +33,5 @@ runs:
       with:
         entrypoint: kaniko-action
         args: --dockerfile ${{ inputs.dockerfile }} --context ${{ inputs.context }} --destination ${{ inputs.destination }} --build-args ${{ inputs.build-args }} --labels ${{ inputs.labels }}
+      env:
+        DOCKERCONFIGJSON: ${{ inputs.dockerconfigjson }}
