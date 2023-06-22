@@ -7,7 +7,7 @@ type Config struct {
 	// ExecutablePath is the path to the Kaniko executor binary.
 	ExecutablePath string
 	// Dockerconfigjson contains the registry and registry credentials
-	DockerConfigJson string `json:"dockerconfigjson,omitempty"`
+	// DockerConfigJson string `json:"dockerconfigjson,omitempty"`
 	// Dockerfile is the path to the Dockerfile to build.
 	Dockerfile string `json:"dockerfile,omitempty"`
 	// Context is the path to the build context.
@@ -15,9 +15,9 @@ type Config struct {
 	// Destination is the destination of the built image.
 	Destination string `json:"destination,omitempty"`
 	// BuildArgs are the args passed to the Docker build.
-	BuildArgs string `json:"build-args,omitempty"`
+	// BuildArgs string `json:"build-args,omitempty"`
 	// Labels are the labels passed to the Docker build.
-	Labels   string `json:"labels,omitempty"`
+	// Labels   string `json:"labels,omitempty"`
 }
 
 type DockerConfigJson struct {

@@ -7,39 +7,63 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"regexp"
+	"path/filepath"
 	"strings"
 )
 
 const (
-	kanikoExecutorBinary = "executor"
-	kanikoConfigJson     = "/kaniko/.docker/config.json"
+	kanikoExecutorBinary   = "executor"
+	dockerConfigJsonEnvVar = "DOCKERCONFIGJSON"
 )
 
-func (k *Config) Run(ctx context.Context) error {
+var (
+	kanikoDir = "/kaniko"
+)
+
+func (k *Config) Run(ctx context.Context) (err error) {
 	k.Context = ctx
-	if err := k.validateDockerConfigJson(); err != nil {
+	dockerConfigJson := os.Getenv(dockerConfigJsonEnvVar)
+
+	if err := k.writeDockerConfigJson(dockerConfigJson); err != nil {
 		return fmt.Errorf("dockerConfigJson validation failed: %w", err)
 	}
 
 	k.lookupBinary()
-	if err := k.authConfig(); err != nil {
-		return fmt.Errorf("failed to write registry auth config: %w", err)
-	}
 
 	kanikoCmd, err := k.cmdBuilder()
 	if err != nil {
 		return fmt.Errorf("failed to build kaniko command: %w", err)
 	}
 
-	return kanikoCmd.Run() 
+	fmt.Printf("Running command: %s\n", kanikoCmd.String())
+
+	return kanikoCmd.Run()
 }
 
-func (k *Config) validateDockerConfigJson() error {
-	if k.DockerConfigJson == "" {
-		return fmt.Errorf("docker registry host and credentials is a required parameter, please set the DOCKERCONFIGJSON environment variable as per the action documentation")
+func (k *Config) writeDockerConfigJson(dockerConfigJson string) error {
+	if dockerConfigJson != "" {
+		dockerConfigPath := filepath.Join(kanikoDir, ".docker", "config.json")
+
+		log.Printf("writing docker config json to %s", dockerConfigPath)
+		if err := os.MkdirAll(filepath.Dir(dockerConfigPath), 0700); err != nil {
+			return fmt.Errorf("creating .docker directory: %w", err)
+		}
+
+		if err := json.Unmarshal([]byte(dockerConfigJson), &DockerConfigJson{}); err != nil {
+			return fmt.Errorf("unmarshalling dockerConfigJson: %w", err)
+		}
+
+		// Write the docker config json into the KANIKO_DIR path
+		if err := os.Setenv("KANIKO_DIR", kanikoDir); err != nil {
+			return fmt.Errorf("setting KANIKO_DIR environment variable: %w", err)
+		}
+
+		
+		if err := os.WriteFile(dockerConfigPath, []byte(dockerConfigJson), 0600); err != nil {
+			return fmt.Errorf("writing docker config json: %w", err)
+		}
 	}
-	return json.Unmarshal([]byte(k.DockerConfigJson), &DockerConfigJson{})
+	return nil
 }
 
 func (k *Config) processDestinations() []string {
@@ -47,11 +71,11 @@ func (k *Config) processDestinations() []string {
 }
 
 func (k *Config) processBuildArgs() []string {
-	return strings.Split(k.BuildArgs, ",")
+	return strings.Split(os.Getenv("DOCKER_BUILD_ARGS"), ",")
 }
 
 func (k *Config) processLabels() []string {
-	return strings.Split(k.Labels, ",")
+	return strings.Split(os.Getenv("DOCKER_LABELS"), ",")
 }
 
 func (k *Config) lookupBinary() {
@@ -66,17 +90,8 @@ func (k *Config) lookupBinary() {
 	k.ExecutablePath = execPath
 }
 
-func (k *Config) authConfig() error {
-	if k.DockerConfigJson != "" {
-		return os.WriteFile(kanikoConfigJson, []byte(k.DockerConfigJson), 0600)
-	}
-	return nil
-}
-
 func (k *Config) env() []string {
-	return []string{
-		"IFS=''", // https://github.com/GoogleContainerTools/kaniko#flag---build-arg
-	}
+	return os.Environ()
 }
 
 func (k *Config) cmdBuilder() (*exec.Cmd, error) {
@@ -87,7 +102,7 @@ func (k *Config) cmdBuilder() (*exec.Cmd, error) {
 	}
 
 	if k.DockerContext != "" {
-		cmdArgs = append(cmdArgs, "--context", regexp.QuoteMeta(k.DockerContext))
+		cmdArgs = append(cmdArgs, "--context", k.DockerContext)
 	}
 
 	for _, destination := range k.processDestinations() {
@@ -95,12 +110,17 @@ func (k *Config) cmdBuilder() (*exec.Cmd, error) {
 	}
 
 	for _, buildArg := range k.processBuildArgs() {
-		cmdArgs = append(cmdArgs, "--build-arg", regexp.QuoteMeta(buildArg))
+		cmdArgs = append(cmdArgs, "--build-arg", buildArg)
 	}
 
 	for _, label := range k.processLabels() {
-		cmdArgs = append(cmdArgs, "--label", regexp.QuoteMeta(label))
+		cmdArgs = append(cmdArgs, "--label", label)
 	}
+
+	cmdArgs = append(cmdArgs, "--verbosity", "debug")
+	// TODO: Remove once https://cloudbees.atlassian.net/browse/SDP-5475 is fixed 
+	cmdArgs = append(cmdArgs, "--cleanup=false")
+	cmdArgs = append(cmdArgs, "--ignore-path", "/cloudbees")
 
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)
 	kanikoCmd.Env = k.env()
