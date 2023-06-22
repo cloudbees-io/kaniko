@@ -40,5 +40,5 @@ runs:
         --destination ${{ inputs.destination }} \
         --build-args ${{ inputs.build-args }} \
         --labels ${{ inputs.labels }}
-      env:
-        DOCKERCONFIGJSON: ${{ inputs.dockerconfigjson }}
+      # env:
+      #   DOCKERCONFIGJSON: ${{ inputs.dockerconfigjson }}
