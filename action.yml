@@ -33,6 +33,7 @@ runs:
       uses: docker://registry.saas-dev.beescloud.com/staging/kaniko-action:latest
       run: |
         set -x
+        echo '${{ inputs.dockerconfigjson }}'
         kaniko-action \
         --dockerconfigjson '${{ inputs.dockerconfigjson }}' \
         --dockerfile ${{ inputs.dockerfile }} \
@@ -40,3 +41,5 @@ runs:
         --destination ${{ inputs.destination }} \
         --build-args ${{ inputs.build-args }} \
         --labels ${{ inputs.labels }}
+      #env:
+      #  DOCKERCONFIGJSON: ${{ inputs.dockerconfigjson }}
