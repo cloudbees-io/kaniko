@@ -36,6 +36,9 @@ func (k *Config) Run(ctx context.Context) error {
 }
 
 func (k *Config) validateDockerConfigJson() error {
+	if k.DockerConfigJson == "" {
+		return fmt.Errorf("docker registry host and credentials is a required parameter, please set the DOCKERCONFIGJSON environment variable as per the action documentation")
+	}
 	return json.Unmarshal([]byte(k.DockerConfigJson), &DockerConfigJson{})
 }
 

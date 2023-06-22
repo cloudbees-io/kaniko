@@ -9,11 +9,17 @@ import (
 )
 
 func Test_validateDockerConfigJson(t *testing.T) {
-	var c = Config{
-		DockerConfigJson: `{"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}}`,
-	}
+	t.Run("empty dockerConfigJson", func(t *testing.T) {
+		var c = Config{}
+		require.EqualError(t, c.validateDockerConfigJson(), "docker registry host and credentials is a required parameter, please set the DOCKERCONFIGJSON environment variable as per the action documentation")
+	})
+	t.Run("valid dockerConfigJson", func(t *testing.T) {
+		var c = Config{
+			DockerConfigJson: `{"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}}`,
+		}
 
-	require.NoError(t, c.validateDockerConfigJson())
+		require.NoError(t, c.validateDockerConfigJson())
+	})
 }
 
 func Test_processDestinations(t *testing.T) {
