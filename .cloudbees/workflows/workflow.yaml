@@ -1,0 +1,32 @@
+name: kaniko-action
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+
+on:
+  push:
+    branches:
+      - '**'
+jobs:
+  build:
+    env:
+      DOCKERCONFIGJSON: ${{ secrets.dockerconfigjson }}
+    steps:
+    - name: get source code
+      uses: docker://alpine/git:v2.36.3
+      shell: sh
+      run: |
+        git clone https://${{secrets.GIT_SECRET_ACCESS_TOKEN}}@github.com/calculi-corp/kaniko .
+    - if: cloudbees.scm.branch == 'main'
+      name: docker build and publish
+      uses: cloudbees-io/kaniko@${{ cloudbees.scm.branch }}
+      with:
+        dockerconfigjson: ${{ secrets.dockerconfigjson }}
+        destination: registry.saas-dev.beescloud.com/staging/kaniko-action:latest
+        labels: maintaner=sdp-pod-3,email=engineering@cloudbees.io
+    - if: cloudbees.scm.branch != 'main'
+      name: docker build and publish
+      uses: cloudbees-io/kaniko@${{ cloudbees.scm.branch }}
+      with:
+        dockerconfigjson: ${{ secrets.dockerconfigjson }}
+        destination: registry.saas-dev.beescloud.com/staging/kaniko-action:${{ cloudbees.scm.branch }}
+        labels: maintaner=sdp-pod-3,email=engineering@cloudbees.io
