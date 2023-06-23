@@ -10,16 +10,11 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o /usr/local/bin/kaniko-action main.go
 
-FROM gcr.io/kaniko-project/executor:v1.11.0 AS kaniko
-
-FROM alpine:latest
+FROM gcr.io/kaniko-project/executor:v1.11.0
 
 COPY --from=build /usr/local/bin/kaniko-action /usr/local/bin/kaniko-action
 
-COPY --from=kaniko /kaniko/executor /kaniko/executor
-
-RUN mkdir -p /kaniko/.docker
-
-ENV PATH="${PATH}:/kaniko/"
+# TODO: Remove once https://cloudbees.atlassian.net/browse/SDP-5475 is fixed
+COPY --from=build /tmp /tmp
 
 ENTRYPOINT ["kaniko-action"]

@@ -2,6 +2,7 @@ package kaniko
 
 import (
 	"context"
+	"os"
 	"os/exec"
 	"testing"
 
@@ -9,11 +10,28 @@ import (
 )
 
 func Test_validateDockerConfigJson(t *testing.T) {
-	var c = Config{
-		DockerConfigJson: `{"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}}`,
-	}
+	t.Run("empty dockerConfigJson", func(t *testing.T) {
+		var c = Config{}
+		require.NoError(t, c.writeDockerConfigJson(""))
+	})
+	t.Run("valid dockerConfigJson", func(t *testing.T) {
+		var c = Config{}
+		kanikoDir = os.TempDir()
+		var dockerConfigJson = `{"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}}`
+		require.NoError(t, c.writeDockerConfigJson(dockerConfigJson))
+	})
+	t.Run("invalid dockerConfigJson", func(t *testing.T) {
+		var c = Config{}
 
-	require.NoError(t, c.validateDockerConfigJson())
+		var dockerConfigJson = `{
+				"auths": {
+					"https://registry.internal": {
+						"auth": "dGVzdF91c2VyOnRlc3RfcHdk"
+					}
+				}`
+
+		require.Error(t, c.writeDockerConfigJson(dockerConfigJson))
+	})
 }
 
 func Test_processDestinations(t *testing.T) {
@@ -35,34 +53,26 @@ func Test_processDestinations(t *testing.T) {
 
 func Test_processBuildArgs(t *testing.T) {
 	t.Run("single build arg", func(t *testing.T) {
-		var c = Config{
-			BuildArgs: "key1=value1",
-		}
-
+		var c = Config{}
+		os.Setenv("DOCKER_BUILD_ARGS", "key1=value1")
 		require.Equal(t, []string{"key1=value1"}, c.processBuildArgs())
 	})
 	t.Run("multiple build args", func(t *testing.T) {
-		var c = Config{
-			BuildArgs: "key1=value1,key2=value2,key3='value3 with spaces'",
-		}
-
+		var c = Config{}
+		os.Setenv("DOCKER_BUILD_ARGS", "key1=value1,key2=value2,key3='value3 with spaces'")
 		require.Equal(t, []string{"key1=value1", "key2=value2", "key3='value3 with spaces'"}, c.processBuildArgs())
 	})
 }
 
 func Test_processLabels(t *testing.T) {
 	t.Run("single label", func(t *testing.T) {
-		var c = Config{
-			Labels: "key1=value1",
-		}
-
+		var c = Config{}
+		os.Setenv("DOCKER_LABELS", "key1=value1")
 		require.Equal(t, []string{"key1=value1"}, c.processLabels())
 	})
 	t.Run("multiple labels", func(t *testing.T) {
-		var c = Config{
-			Labels: "key1=value1,key2=value2",
-		}
-
+		var c = Config{}
+		os.Setenv("DOCKER_LABELS", "key1=value1,key2=value2")
 		require.Equal(t, []string{"key1=value1", "key2=value2"}, c.processLabels())
 	})
 }
@@ -71,15 +81,14 @@ func Test_cmdBuilder(t *testing.T) {
 	ctx := context.Background()
 
 	var c = Config{
-		ExecutablePath:   "/kaniko/executor",
-		DockerConfigJson: `{"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}}`,
-		Dockerfile:       "Dockerfile",
-		DockerContext:    ".",
-		Destination:      "gcr.io/kaniko-project/executor:v1.6.0",
-		BuildArgs:        "key1=value1,key2=value2",
-		Labels:           "key_l1=l_value1,key_l2=l_value2",
-		Context:          ctx,
+		ExecutablePath: "/kaniko/executor",
+		Dockerfile:     "Dockerfile",
+		DockerContext:  ".",
+		Destination:    "gcr.io/kaniko-project/executor:v1.6.0",
+		Context:        ctx,
 	}
+	os.Setenv("DOCKER_BUILD_ARGS", "key1=value1,key2=value2")
+	os.Setenv("DOCKER_LABELS", "key_l1=l_value1,key_l2=l_value2")
 
 	cmd, err := c.cmdBuilder()
 	require.NoError(t, err)
@@ -88,7 +97,7 @@ func Test_cmdBuilder(t *testing.T) {
 		"--dockerfile",
 		"Dockerfile",
 		"--context",
-		"\\.",
+		".",
 		"--destination",
 		"gcr.io/kaniko-project/executor:v1.6.0",
 		"--build-arg",
@@ -99,12 +108,13 @@ func Test_cmdBuilder(t *testing.T) {
 		"key_l1=l_value1",
 		"--label",
 		"key_l2=l_value2",
+		"--verbosity",
+		"debug",
+		"--cleanup=false",
+		"--ignore-path",
+		"/cloudbees",
 	}
 	expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", exepectedArgs...)
-	expectedCmd.Env = []string{
-		"IFS=''",
-	}
-	
+
 	require.Equal(t, expectedCmd.Args, cmd.Args)
-	require.Equal(t, expectedCmd.Env, cmd.Env)
 }

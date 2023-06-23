@@ -12,7 +12,6 @@ This action can be used to build and publish Docker images using link:https://gi
     # dockerconfigjson contains the docker registry credentials. The format of the JSON is as shown below:
     # {"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}} where the auth field is base64 encoded.
     # You can pass multiple registry credentials in the same JSON.
-    # Required: true
     dockerconfigjson: ${{ secrets.dockerconfigjson }}
     # dockerfile is the path to the Dockerfile to be built.
     dockerfile: Dockerfile
