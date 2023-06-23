@@ -32,7 +32,7 @@ runs:
       uses: docker://registry.saas-dev.beescloud.com/staging/kaniko-action:latest
       with:
         entrypoint: kaniko-action
-        args: --dockerfile ${{ inputs.dockerfile }} --context ${{ inputs.context }} --destination ${{ inputs.destination }}
+        args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}"
       env:
         DOCKERCONFIGJSON: ${{ inputs.dockerconfigjson }}
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
