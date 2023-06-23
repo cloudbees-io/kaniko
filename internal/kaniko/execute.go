@@ -103,6 +103,8 @@ func (k *Config) cmdBuilder() (*exec.Cmd, error) {
 
 	if k.DockerContext != "" {
 		cmdArgs = append(cmdArgs, "--context", k.DockerContext)
+	} else {
+		cmdArgs = append(cmdArgs, "--context", "${CLOUDBEES_WORKSPACE}")
 	}
 
 	for _, destination := range k.processDestinations() {
