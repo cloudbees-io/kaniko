@@ -15,7 +15,7 @@ jobs:
       uses: docker://alpine/git:v2.36.3
       shell: sh
       run: |
-        git clone https://${{secrets.GIT_SECRET_ACCESS_TOKEN}}@github.com/calculi-corp/kaniko .
+        git clone https://${{secrets.GIT_SECRET_ACCESS_TOKEN}}@github.com/cloudbees-io/kaniko .
     - name: docker build and publish
       uses: cloudbees-io/kaniko@${{ cloudbees.scm.branch }}
       with:
