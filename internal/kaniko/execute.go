@@ -118,9 +118,6 @@ func (k *Config) cmdBuilder() (*exec.Cmd, error) {
 	}
 
 	cmdArgs = append(cmdArgs, "--verbosity", "debug")
-	// TODO: Remove once https://cloudbees.atlassian.net/browse/SDP-5475 is fixed 
-	cmdArgs = append(cmdArgs, "--cleanup=false")
-	cmdArgs = append(cmdArgs, "--ignore-path", "/cloudbees")
 
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)
 	kanikoCmd.Env = k.env()
