@@ -28,3 +28,4 @@ jobs:
         dockerconfigjson: ${{ secrets.dockerconfigjson }}
         destination: registry.saas-dev.beescloud.com/staging/kaniko-action:${{ cloudbees.scm.branch }}${{ cloudbees.scm.branch == 'main' && ',registry.saas-dev.beescloud.com/staging/kaniko-action:latest' || '' }}
         labels: maintaner=sdp-pod-3,email=engineering@cloudbees.io
+        context: ${{ cloudbees.workspace }}
