@@ -15,13 +15,7 @@ jobs:
       uses: docker://alpine/git:v2.36.3
       shell: sh
       run: |
-        git clone https://${{secrets.GIT_SECRET_ACCESS_TOKEN}}@github.com/cloudbees-io/kaniko .
-        echo "scm branch: ${{ cloudbees.scm.branch }}"
-        echo "scm sha: ${{ cloudbees.scm.sha }}"
-        echo "scm repo: ${{ cloudbees.scm.repository }}"
-        echo "scm provider: ${{ cloudbees.scm.provider }}"
-        echo "scm provider_url: ${{ cloudbees.scm.provider_url }}"
-        echo "workspace: ${{ cloudbees.workspace }}"
+        git clone https://${{secrets.GIT_SECRET_ACCESS_TOKEN}}@github.com/cloudbees-io/kaniko -b ${{ cloudbees.scm.branch }} .
     - name: docker build and publish
       uses: cloudbees-io/kaniko@SDP-3696
       with:
