@@ -8,8 +8,6 @@ on:
       - '**'
 jobs:
   build:
-    env:
-      DOCKERCONFIGJSON: ${{ secrets.dockerconfigjson }}
     steps:
     - name: get source code
       uses: docker://alpine/git:v2.36.3
