@@ -102,7 +102,10 @@ func (k *Config) env() []string {
 }
 
 func (k *Config) cmdBuilder() (*exec.Cmd, error) {
-	var cmdArgs []string
+	cmdArgs := []string{
+		"--verbosity=debug",
+		"--ignore-path=/cloudbees/",
+	}
 
 	if k.Dockerfile != "" {
 		cmdArgs = append(cmdArgs, "--dockerfile", k.Dockerfile)
@@ -123,8 +126,6 @@ func (k *Config) cmdBuilder() (*exec.Cmd, error) {
 	for _, label := range k.processLabels() {
 		cmdArgs = append(cmdArgs, "--label", label)
 	}
-
-	cmdArgs = append(cmdArgs, "--verbosity", "debug")
 
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)
 	kanikoCmd.Env = k.env()

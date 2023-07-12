@@ -104,6 +104,8 @@ func Test_cmdBuilder(t *testing.T) {
 	require.NoError(t, err)
 
 	exepectedArgs := []string{
+		"--verbosity=debug",
+		"--ignore-path=/cloudbees/",
 		"--dockerfile",
 		"Dockerfile",
 		"--context",
@@ -118,11 +120,6 @@ func Test_cmdBuilder(t *testing.T) {
 		"key_l1=l_value1",
 		"--label",
 		"key_l2=l_value2",
-		"--verbosity",
-		"debug",
-		"--cleanup=false",
-		"--ignore-path",
-		"/cloudbees",
 	}
 	expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", exepectedArgs...)
 
