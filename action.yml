@@ -29,7 +29,7 @@ runs:
   steps:
     - id: build-and-publish-docker-image
       name: Build and publish Docker image
-      uses: docker://registry.saas-dev.beescloud.com/staging/kaniko-action:latest
+      uses: docker://registry.saas-dev.beescloud.com/staging/kaniko-action:0.0.1
       with:
         entrypoint: kaniko-action
         args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}"
