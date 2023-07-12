@@ -52,6 +52,11 @@ func Test_processDestinations(t *testing.T) {
 }
 
 func Test_processBuildArgs(t *testing.T) {
+	t.Run("no build arg", func(t *testing.T) {
+		var c = Config{}
+		os.Setenv("DOCKER_BUILD_ARGS", "")
+		require.Nil(t, c.processBuildArgs())
+	})
 	t.Run("single build arg", func(t *testing.T) {
 		var c = Config{}
 		os.Setenv("DOCKER_BUILD_ARGS", "key1=value1")
@@ -65,6 +70,11 @@ func Test_processBuildArgs(t *testing.T) {
 }
 
 func Test_processLabels(t *testing.T) {
+	t.Run("no label", func(t *testing.T) {
+		var c = Config{}
+		os.Setenv("DOCKER_LABELS", "")
+		require.Nil(t, c.processLabels())
+	})
 	t.Run("single label", func(t *testing.T) {
 		var c = Config{}
 		os.Setenv("DOCKER_LABELS", "key1=value1")
