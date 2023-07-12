@@ -58,7 +58,6 @@ func (k *Config) writeDockerConfigJson(dockerConfigJson string) error {
 			return fmt.Errorf("setting KANIKO_DIR environment variable: %w", err)
 		}
 
-		
 		if err := os.WriteFile(dockerConfigPath, []byte(dockerConfigJson), 0600); err != nil {
 			return fmt.Errorf("writing docker config json: %w", err)
 		}
@@ -71,11 +70,19 @@ func (k *Config) processDestinations() []string {
 }
 
 func (k *Config) processBuildArgs() []string {
-	return strings.Split(os.Getenv("DOCKER_BUILD_ARGS"), ",")
+	args := os.Getenv("DOCKER_BUILD_ARGS")
+	if args == "" {
+		return nil
+	}
+	return strings.Split(args, ",")
 }
 
 func (k *Config) processLabels() []string {
-	return strings.Split(os.Getenv("DOCKER_LABELS"), ",")
+	labels := os.Getenv("DOCKER_LABELS")
+	if labels == "" {
+		return nil
+	}
+	return strings.Split(labels, ",")
 }
 
 func (k *Config) lookupBinary() {
@@ -95,7 +102,10 @@ func (k *Config) env() []string {
 }
 
 func (k *Config) cmdBuilder() (*exec.Cmd, error) {
-	var cmdArgs []string
+	cmdArgs := []string{
+		"--verbosity=debug",
+		"--ignore-path=/cloudbees/",
+	}
 
 	if k.Dockerfile != "" {
 		cmdArgs = append(cmdArgs, "--dockerfile", k.Dockerfile)
@@ -116,8 +126,6 @@ func (k *Config) cmdBuilder() (*exec.Cmd, error) {
 	for _, label := range k.processLabels() {
 		cmdArgs = append(cmdArgs, "--label", label)
 	}
-
-	cmdArgs = append(cmdArgs, "--verbosity", "debug")
 
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)
 	kanikoCmd.Env = k.env()
