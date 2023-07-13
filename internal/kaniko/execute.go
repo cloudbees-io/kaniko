@@ -2,7 +2,6 @@ package kaniko
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -12,21 +11,11 @@ import (
 )
 
 const (
-	kanikoExecutorBinary   = "executor"
-	dockerConfigJsonEnvVar = "DOCKERCONFIGJSON"
-)
-
-var (
-	kanikoDir = "/kaniko"
+	kanikoExecutorBinary = "executor"
 )
 
 func (k *Config) Run(ctx context.Context) (err error) {
 	k.Context = ctx
-	dockerConfigJson := os.Getenv(dockerConfigJsonEnvVar)
-
-	if err := k.writeDockerConfigJson(dockerConfigJson); err != nil {
-		return fmt.Errorf("dockerConfigJson validation failed: %w", err)
-	}
 
 	k.lookupBinary()
 
@@ -38,31 +27,6 @@ func (k *Config) Run(ctx context.Context) (err error) {
 	fmt.Printf("Running command: %s\n", kanikoCmd.String())
 
 	return kanikoCmd.Run()
-}
-
-func (k *Config) writeDockerConfigJson(dockerConfigJson string) error {
-	if dockerConfigJson != "" {
-		dockerConfigPath := filepath.Join(kanikoDir, ".docker", "config.json")
-
-		log.Printf("writing docker config json to %s", dockerConfigPath)
-		if err := os.MkdirAll(filepath.Dir(dockerConfigPath), 0700); err != nil {
-			return fmt.Errorf("creating .docker directory: %w", err)
-		}
-
-		if err := json.Unmarshal([]byte(dockerConfigJson), &DockerConfigJson{}); err != nil {
-			return fmt.Errorf("unmarshalling dockerConfigJson: %w", err)
-		}
-
-		// Write the docker config json into the KANIKO_DIR path
-		if err := os.Setenv("KANIKO_DIR", kanikoDir); err != nil {
-			return fmt.Errorf("setting KANIKO_DIR environment variable: %w", err)
-		}
-
-		if err := os.WriteFile(dockerConfigPath, []byte(dockerConfigJson), 0600); err != nil {
-			return fmt.Errorf("writing docker config json: %w", err)
-		}
-	}
-	return nil
 }
 
 func (k *Config) processDestinations() []string {
