@@ -32,6 +32,6 @@ runs:
         entrypoint: kaniko-action
         args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}"
       env:
-        #DOCKERCONFIGJSON: ${{ env.HOME }}/.docker/config.json
+        DOCKERCONFIGJSON: ${{ env.HOME }}/.docker/config.json
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
         DOCKER_LABELS: ${{ inputs.labels }}
