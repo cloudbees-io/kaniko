@@ -127,6 +127,10 @@ func (k *Config) cmdBuilder() (*exec.Cmd, error) {
 		cmdArgs = append(cmdArgs, "--label", label)
 	}
 
+	if outDir := os.Getenv("CLOUDBEES_OUTPUTS"); outDir != "" {
+		cmdArgs = append(cmdArgs, "--digest-file", filepath.Join(outDir, "digest"))
+	}
+
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)
 	kanikoCmd.Env = k.env()
 

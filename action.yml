@@ -11,7 +11,7 @@ inputs:
   context:
     description: 'Docker build context'
     default: ${{ cloudbees.workspace }}
-  destination: 
+  destination:
     description: >
       Target image(s) that will be published to the registries configured in the dockerconfigjson.
       Type: CSV
@@ -24,10 +24,14 @@ inputs:
     description: >
       Metadata to be associated with the resulting image.
       Type: CSV
+outputs:
+  digest:
+    value: ${{ steps.imgbuild.outputs.digest }}
+    description: Image digest (image ID)
 runs:
   using: composite
   steps:
-    - id: build-and-publish-docker-image
+    - id: imgbuild
       name: Build and publish Docker image
       uses: docker://registry.saas-dev.beescloud.com/staging/kaniko-action:0.0.1
       with:
