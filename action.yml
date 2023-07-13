@@ -32,6 +32,6 @@ runs:
         entrypoint: kaniko-action
         args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}"
       env:
-        DOCKER_CONFIG: /cloudbees/home/.docker/config.json
+        DOCKER_CONFIG: /cloudbees/home/.docker
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
         DOCKER_LABELS: ${{ inputs.labels }}
