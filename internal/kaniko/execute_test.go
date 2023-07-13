@@ -9,31 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_validateDockerConfigJson(t *testing.T) {
-	t.Run("empty dockerConfigJson", func(t *testing.T) {
-		var c = Config{}
-		require.NoError(t, c.writeDockerConfigJson(""))
-	})
-	t.Run("valid dockerConfigJson", func(t *testing.T) {
-		var c = Config{}
-		kanikoDir = os.TempDir()
-		var dockerConfigJson = `{"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}}`
-		require.NoError(t, c.writeDockerConfigJson(dockerConfigJson))
-	})
-	t.Run("invalid dockerConfigJson", func(t *testing.T) {
-		var c = Config{}
-
-		var dockerConfigJson = `{
-				"auths": {
-					"https://registry.internal": {
-						"auth": "dGVzdF91c2VyOnRlc3RfcHdk"
-					}
-				}`
-
-		require.Error(t, c.writeDockerConfigJson(dockerConfigJson))
-	})
-}
-
 func Test_processDestinations(t *testing.T) {
 	t.Run("single destination", func(t *testing.T) {
 		var c = Config{

@@ -14,11 +14,6 @@ type Config struct {
 	Destination string `json:"destination,omitempty"`
 }
 
-type DockerConfigJson struct {
-	// Auths is a map of registries and their credentials.
-	Auths map[string]Auth `json:"auths,omitempty"`
-}
-
 type Auth struct {
 	// Auth is the base64 encoded credentials for the registry.
 	Auth string `json:"auth,omitempty"`

@@ -2,6 +2,15 @@
 
 This action can be used to build and publish Docker images using link:https://github.com/GoogleContainerTools/kaniko#kaniko---build-images-in-kubernetes[kaniko] .
 
+=== Prerequisites
+
+Before invoking the action, make sure to have the docker config JSON file in the `${HOME}/.docker/config.json` path. This file is used to authenticate with the docker registry.
+
+The format of this JSON file is:
+
+`{"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}}` 
+
+where the `auth` field is base64 encoded.
 
 === Usage
 
@@ -9,10 +18,6 @@ This action can be used to build and publish Docker images using link:https://gi
 ----
 - uses: cloudbees-io/kaniko@v1
   with:
-    # dockerconfigjson contains the docker registry credentials. The format of the JSON is as shown below:
-    # {"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}} where the auth field is base64 encoded.
-    # You can pass multiple registry credentials in the same JSON.
-    dockerconfigjson: ${{ secrets.dockerconfigjson }}
     # dockerfile is the path to the Dockerfile to be built.
     dockerfile: Dockerfile
     # context is the path to the build context.
