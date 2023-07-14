@@ -2,6 +2,7 @@ apiVersion: automation.cloudbees.io/v1alpha1
 kind: action
 name: 'Kaniko build and push'
 description: 'Build and publish Docker images from a Dockerfile using Kaniko'
+
 inputs:
   dockerfile:
     description: 'Path to the Dockerfile'
@@ -22,10 +23,31 @@ inputs:
     description: >
       Metadata to be associated with the resulting image.
       Type: CSV
+
 outputs:
   digest:
     value: ${{ steps.imgbuild.outputs.digest }}
     description: Image digest (image ID)
+  tag:
+    value: ${{ steps.imgbuild.outputs.tag }}
+    description: Tag of the first pushed image
+  tag-digest:
+    value: ${{ steps.imgbuild.outputs.tag-digest }}
+    description: |
+      Tag of the first specified destination along with the image digest.
+      Please note that this format is not part of the OCI standard but supported by most container tools.
+      Tools loading such an image reference ignore the tag but perform the lookup based on the image repository and digest only.
+      The tag only serves as a hint for humans.
+      Using this format guarantees that the image is continued to be used even when the tag was overwritten and prevents stale image caches on different nodes.
+  image:
+    value: ${{ steps.imgbuild.outputs.image }}
+    description: |
+      Image reference of the first specified destination, including the image digest.
+      Please note that this image reference format is not part of the OCI standard but supported by most container tools.
+      Tools loading such an image reference ignore the tag but perform the lookup based on the image repository and digest only.
+      The tag only serves as a hint for humans.
+      Using this image reference format guarantees that the image is continued to be used even when the tag was overwritten and prevents stale image caches on different nodes.
+
 runs:
   using: composite
   steps:
