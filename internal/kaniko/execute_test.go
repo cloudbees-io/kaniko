@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -76,7 +77,7 @@ func Test_cmdBuilder(t *testing.T) {
 	os.Setenv("DOCKER_LABELS", "key_l1=l_value1,key_l2=l_value2")
 	os.Setenv("CLOUDBEES_OUTPUTS", "/tmp/fake-outputs")
 
-	cmd, err := c.cmdBuilder()
+	cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
 	require.NoError(t, err)
 
 	exepectedArgs := []string{
@@ -97,9 +98,83 @@ func Test_cmdBuilder(t *testing.T) {
 		"--label",
 		"key_l2=l_value2",
 		"--digest-file",
-		"/tmp/fake-outputs/digest",
+		"/tmp/kaniko-test-digest-file",
 	}
 	expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", exepectedArgs...)
 
 	require.Equal(t, expectedCmd.Args, cmd.Args)
+}
+
+func Test_writeActionOutput(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "kaniko-test-")
+	require.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+	fakeDigest := "sha256:cafebabebeef"
+	digestFile := filepath.Join(tmpDir, "digest-file")
+	err = os.WriteFile(digestFile, []byte(fakeDigest), 0640)
+	require.NoError(t, err)
+
+	for _, c := range []struct {
+		name          string
+		dest          string
+		wantTag       string
+		wantTagDigest string
+		wantImage     string
+	}{
+		{
+			name:          "empty dest",
+			wantTag:       "latest",
+			wantTagDigest: "latest@sha256:cafebabebeef",
+			wantImage:     ":latest@sha256:cafebabebeef",
+		},
+		{
+			name:          "single destination no tag",
+			dest:          "my.registry/myimage",
+			wantTag:       "latest",
+			wantTagDigest: "latest@sha256:cafebabebeef",
+			wantImage:     "my.registry/myimage:latest@sha256:cafebabebeef",
+		},
+		{
+			name:          "single destination with tag",
+			dest:          "my.registry/myimage:latest",
+			wantTag:       "latest",
+			wantTagDigest: "latest@sha256:cafebabebeef",
+			wantImage:     "my.registry/myimage:latest@sha256:cafebabebeef",
+		},
+		{
+			name:          "single destination with other tag",
+			dest:          "my.registry/myimage:sometag",
+			wantTag:       "sometag",
+			wantTagDigest: "sometag@sha256:cafebabebeef",
+			wantImage:     "my.registry/myimage:sometag@sha256:cafebabebeef",
+		},
+		{
+			name:          "multiple destinations",
+			dest:          "my.registry/myimage:sometag,my.registry/myimage:latest",
+			wantTag:       "sometag",
+			wantTagDigest: "sometag@sha256:cafebabebeef",
+			wantImage:     "my.registry/myimage:sometag@sha256:cafebabebeef",
+		},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			var testee = Config{
+				Destination: c.dest,
+			}
+			outDir, err := os.MkdirTemp("", "kaniko-test-")
+			require.NoError(t, err)
+			defer os.RemoveAll(outDir)
+
+			err = testee.writeActionOutputs(outDir, digestFile)
+			require.NoError(t, err, "write outputs")
+
+			outputNames := []string{"digest", "tag", "tag-digest", "image"}
+			expectValues := []string{fakeDigest, c.wantTag, c.wantTagDigest, c.wantImage}
+
+			for i, outputName := range outputNames {
+				v, err := os.ReadFile(filepath.Join(outDir, outputName))
+				require.NoError(t, err, outputName)
+				require.Equal(t, expectValues[i], string(v), outputName)
+			}
+		})
+	}
 }
