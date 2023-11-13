@@ -114,10 +114,27 @@ func (k *Config) env() []string {
 	return os.Environ()
 }
 
+func validateVerbosity(verbosity string) error {
+	knownVerbosities := []string{"panic", "fatal", "error", "warn", "info", "debug", "trace"}
+	for _, knownVerbosity := range knownVerbosities {
+		if verbosity == knownVerbosity {
+			return nil
+		}
+	}
+	return fmt.Errorf("unknown verbosity level: %s", verbosity)
+}
+
 func (k *Config) cmdBuilder(digestFile string) (*exec.Cmd, error) {
 	cmdArgs := []string{
-		"--verbosity=debug",
 		"--ignore-path=/cloudbees/",
+	}
+
+	if k.Verbosity != "" {
+		k.Verbosity = strings.ToLower(k.Verbosity)
+		if errVerbosity := validateVerbosity(k.Verbosity); errVerbosity != nil {
+			return nil, errVerbosity
+		}
+		cmdArgs = append(cmdArgs, "--verbosity="+k.Verbosity)
 	}
 
 	if k.Dockerfile != "" {

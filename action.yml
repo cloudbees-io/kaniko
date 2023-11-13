@@ -23,6 +23,9 @@ inputs:
     description: >
       Metadata to be associated with the resulting image.
       Type: CSV
+  verbosity:
+    description: >
+      Log level verbosity - panic, fatal, error, warn, info, debug, trace
 
 outputs:
   digest:
