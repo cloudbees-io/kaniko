@@ -1,16 +1,16 @@
-== Cloudbees action for building and publishing docker images using kaniko
+== CloudBees action for building and publishing Docker images using kaniko
 
-This action can be used to build and publish Docker images using link:https://github.com/GoogleContainerTools/kaniko#kaniko---build-images-in-kubernetes[kaniko] .
+This action can be used to build and publish Docker images using link:https://github.com/GoogleContainerTools/kaniko#kaniko---build-images-in-kubernetes[kaniko].
 
 === Prerequisites
 
-Before invoking the action, make sure to have the docker config JSON file in the `${HOME}/.docker/config.json` path. This file is used to authenticate with the docker registry.
+Before invoking the action, make sure to have the docker config JSON file in the `${HOME}/.docker/config.json` path. This file is used to authenticate with the Docker registry.
 
 The format of this JSON file is:
 
 `{"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}}` 
 
-where the `auth` field is base64 encoded.
+NOTE: The `auth` field is base64 encoded.
 
 === Usage
 
@@ -22,15 +22,16 @@ where the `auth` field is base64 encoded.
     dockerfile: Dockerfile
     # context is the path to the build context.
     context: .
-    # destination is the target image that will be published. Its a List, so you can pass multiple images.
+    # destination is the target image that will be published. It accepts multiple images in a CSV format.
     # Required: true
     # Type: CSV
     destination: <registry host>/<image name>:1.0.1,<registry host>/<image name>:latest
-    # build_args are the build arguments that will be passed to the kaniko build. Its a List, so you can pass multiple build arguments.
+    # build_args are the build arguments that will be passed to the kaniko build. It accepts multiple build arguments in a CSV format.
     # Type: CSV
     build-args: BUILDKIT_CONTEXT_KEEP_GIT_DIR=1,BUILDKIT_INLINE_CACHE=1
-    # labels are the metadata that will be added to the final image. Its a List, so you can pass multiple labels.
+    # labels are the metadata that will be added to the final image. It accepts multiple labels in a CSV format.
     # Type: CSV
-    labels: maintaner=John Smith,version=1.0.1
+    labels: maintainer=John Smith,version=1.0.1
+    # verbosity is the log level used when running the kaniko build. It can be one of: panic, fatal, error, warn, info, debug, trac
       
 ----
