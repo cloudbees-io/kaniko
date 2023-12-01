@@ -19,7 +19,7 @@ In your YAML file, add:
         with:
         registry: ${{ vars.DOCKER_REGISTRY }}
         username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.STAGING_DOCKER_PASSWORD }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
 ----
 
