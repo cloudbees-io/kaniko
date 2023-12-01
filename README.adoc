@@ -6,7 +6,24 @@ Use this action to build and publish Docker images using link:https://github.com
 
 To authenticate with the Docker registry, you must have a Docker config file in the `${HOME}/.docker/config.json` path.
 
-The Docker config file should be formatted in JSON as follows:
+Use link:https://github.com/cloudbees-io/configure-oci-credentials[the OCI credentials configuration action] to generate a Docker config file, as in the following example.
+
+In your YAML file, add:
+
+[source,yaml]
+----
+
+      - id: dockerconfig
+        name: Configure container registry credentials
+        uses: cloudbees-io/configure-oci-credentials@v1
+        with:
+        registry: ${{ vars.STAGING_DOCKER_REGISTRY }}
+        username: ${{ secrets.STAGING_DOCKER_USERNAME }}
+        password: ${{ secrets.STAGING_DOCKER_PASSWORD }}
+
+----
+
+The Docker config file must be formatted in JSON, as follows:
 
 [source,json,role="novalidate"]
 ----
@@ -23,6 +40,8 @@ The Docker config file should be formatted in JSON as follows:
 
 NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
 
+include::ROOT:partial$github-link.adoc[]
+
 == Inputs
 
 [cols="2a,1a,1a,3a",options="header"]
@@ -37,12 +56,12 @@ NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
 | `dockerfile`
 | String
 | No
-| The path to the Dockerfile to be built.
+| The path to the Dockerfile to be built. Default is `Dockerfile`.
 
 | `context`
 | String
 | No
-| The path to the build context.
+| The path to the build context. Default is `${{ cloudbees.workspace }}`.
 
 | `destination`
 | String
