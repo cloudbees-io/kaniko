@@ -40,8 +40,6 @@ The Docker config file must be formatted in JSON, as follows:
 
 NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
 
-include::ROOT:partial$github-link.adoc[]
-
 == Inputs
 
 [cols="2a,1a,1a,3a",options="header"]
