@@ -1,7 +1,7 @@
 name: kaniko-action
 apiVersion: automation.cloudbees.io/v1alpha1
 kind: workflow
-
+ 
 on:
   push:
     branches:
