@@ -23,6 +23,10 @@ inputs:
     description: >
       Metadata to be associated with the resulting image.
       Type: CSV
+  verbosity:
+    default: debug
+    description: >
+      Log level verbosity - panic, fatal, error, warn, info, debug, trace
 
 outputs:
   digest:
@@ -56,7 +60,7 @@ runs:
       uses: docker://public.ecr.aws/l7o7z1g8/actions/kaniko-action:0.0.4
       with:
         entrypoint: kaniko-action
-        args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}"
+        args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --verbosity "${{ inputs.verbosity }}"
       env:
         DOCKER_CONFIG: ${{ cloudbees.home }}/.docker
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
