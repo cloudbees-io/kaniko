@@ -85,6 +85,12 @@ NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
 | String
 | No
 | If set, fails build if registry-mirrors cannot pull image. If registry-mirrors is empty, this flag is ignored. Accepts 'true' or 'false', default is 'false'.
+
+| `verbosity`
+| String
+| No
+| The verbosity of logging when running the kaniko build. It can be one of: `panic`, `fatal`, `error`, `warn`, `info`, `debug`, `trace`
+
 |===
 
 == Usage example
@@ -101,6 +107,7 @@ In your YAML file, add:
           destination: <registry host>/<image name>:1.0.1,<registry host>/<image name>:latest
           build-args: BUILDKIT_CONTEXT_KEEP_GIT_DIR=1,BUILDKIT_INLINE_CACHE=1
           labels: maintainer=John Smith,version=1.0.1
+          verbosity: info
 
 ----
 
