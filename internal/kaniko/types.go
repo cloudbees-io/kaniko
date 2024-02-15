@@ -12,11 +12,13 @@ type Config struct {
 	DockerContext string `json:"context,omitempty"`
 	// Destination is the destination of the built image.
 	Destination string `json:"destination,omitempty"`
+	// SkipDefaultRegistryFallback
+	SkipDefaultRegistryFallback bool `json:"skipDefaultRegistryFallback,omitempty"`
 }
 
 type Auth struct {
 	// Auth is the base64 encoded credentials for the registry.
-	Auth string `json:"auth,omitempty"`
+	Auth     string `json:"auth,omitempty"`
 	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"`
 }
