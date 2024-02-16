@@ -98,6 +98,10 @@ func (k *Config) processLabels() []string {
 	return strings.Split(labels, ",")
 }
 
+func (k *Config) processRegistryMirrors() []string {
+	return strings.Split(k.RegistryMirrors, ",")
+}
+
 func (k *Config) lookupBinary() {
 	// The kaniko binary which executes the docker build and publish is called 'executor',
 	// which is in the path '/kaniko/executor'.
@@ -140,8 +144,16 @@ func (k *Config) cmdBuilder(digestFile string) (*exec.Cmd, error) {
 		cmdArgs = append(cmdArgs, "--label", label)
 	}
 
+	for _, mirror := range k.processRegistryMirrors() {
+		cmdArgs = append(cmdArgs, "--registry-mirror", mirror)
+	}
+
 	if digestFile != "" {
 		cmdArgs = append(cmdArgs, "--digest-file", digestFile)
+	}
+
+	if k.SkipDefaultRegistryFallback {
+		cmdArgs = append(cmdArgs, "--skip-default-registry-fallback")
 	}
 
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)

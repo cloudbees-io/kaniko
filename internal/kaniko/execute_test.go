@@ -67,11 +67,13 @@ func Test_cmdBuilder(t *testing.T) {
 	ctx := context.Background()
 
 	var c = Config{
-		ExecutablePath: "/kaniko/executor",
-		Dockerfile:     "Dockerfile",
-		DockerContext:  ".",
-		Destination:    "gcr.io/kaniko-project/executor:v1.6.0",
-		Context:        ctx,
+		ExecutablePath:              "/kaniko/executor",
+		Dockerfile:                  "Dockerfile",
+		DockerContext:               ".",
+		Destination:                 "gcr.io/kaniko-project/executor:v1.6.0",
+		Context:                     ctx,
+		RegistryMirrors:             "mirror.gcr.io,mycompany-docker-virtual.jfrog.io",
+		SkipDefaultRegistryFallback: true,
 	}
 	os.Setenv("DOCKER_BUILD_ARGS", "key1=value1,key2=value2")
 	os.Setenv("DOCKER_LABELS", "key_l1=l_value1,key_l2=l_value2")
@@ -97,8 +99,13 @@ func Test_cmdBuilder(t *testing.T) {
 		"key_l1=l_value1",
 		"--label",
 		"key_l2=l_value2",
+		"--registry-mirror",
+		"mirror.gcr.io",
+		"--registry-mirror",
+		"mycompany-docker-virtual.jfrog.io",
 		"--digest-file",
 		"/tmp/kaniko-test-digest-file",
+		"--skip-default-registry-fallback",
 	}
 	expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", exepectedArgs...)
 
