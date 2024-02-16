@@ -64,9 +64,8 @@ runs:
       uses: docker://public.ecr.aws/l7o7z1g8/actions/kaniko-action:0.0.4
       with:
         entrypoint: kaniko-action
-        args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --skip-default-registry-fallback "${{ inputs.skip-default-registry-fallback }}"
+        args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --registry-mirrors "${{ inputs.registry-mirrors }}" --skip-default-registry-fallback "${{ inputs.skip-default-registry-fallback }}"
       env:
         DOCKER_CONFIG: ${{ cloudbees.home }}/.docker
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
         DOCKER_LABELS: ${{ inputs.labels }}
-        KANIKO_REGISTRY_MIRROR: ${{ inputs.registry-mirrors }}
