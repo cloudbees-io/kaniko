@@ -25,7 +25,7 @@ jobs:
         mkdir -p $HOME/.docker
         echo "$DOCKERCONFIGJSON" > $HOME/.docker/config.json
     - name: docker build and publish
-      uses: cloudbees-io/kaniko@v1
+      uses: ./
       with:
         destination: registry.saas-dev.beescloud.com/staging/kaniko-action:${{ cloudbees.scm.sha }}${{ cloudbees.scm.branch == 'main' && ',registry.saas-dev.beescloud.com/staging/kaniko-action:0.0.5,registry.saas-dev.beescloud.com/staging/kaniko-action:latest' || '' }}
         labels: maintaner=sdp-pod-3,email=engineering@cloudbees.io
