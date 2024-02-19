@@ -40,6 +40,6 @@ func init() {
 	cmd.Flags().StringVar(&cfg.Dockerfile, "dockerfile", "", "Dockerfile is the path to the Dockerfile to build")
 	cmd.Flags().StringVar(&cfg.DockerContext, "context", "", "Context is the path to the build context")
 	cmd.Flags().StringVar(&cfg.Destination, "destination", "", "Destination is the destination of the built image")
-	cmd.Flags().StringVar(&cfg.RegistryMirrors, "registryMirrors", "", "Registry mirrors to find images")
-	cmd.Flags().BoolVar(&cfg.SkipDefaultRegistryFallback, "skipDefaultRegistryFallback", false, "Fail if image is not found on registry mirrors")
+	cmd.Flags().StringVar(&cfg.RegistryMirrors, "registry-mirrors", "", "Registry mirrors to find images")
+	cmd.Flags().BoolVar(&cfg.SkipDefaultRegistryFallback, "skip-default-registry-fallback", false, "Fail if image is not found on registry mirrors")
 }
