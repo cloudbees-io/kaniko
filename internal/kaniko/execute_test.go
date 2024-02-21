@@ -73,7 +73,7 @@ func Test_cmdBuilder(t *testing.T) {
 		Destination:                 "gcr.io/kaniko-project/executor:v1.6.0",
 		Context:                     ctx,
 		RegistryMirrors:             "mirror.gcr.io,mycompany-docker-virtual.jfrog.io",
-		SkipDefaultRegistryFallback: true,
+		SkipDefaultRegistryFallback: "true",
 	}
 	os.Setenv("DOCKER_BUILD_ARGS", "key1=value1,key2=value2")
 	os.Setenv("DOCKER_LABELS", "key_l1=l_value1,key_l2=l_value2")
@@ -119,12 +119,13 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 	ctx := context.Background()
 	t.Run("multiple registry mirrors", func(t *testing.T) {
 		var c = Config{
-			ExecutablePath:  "/kaniko/executor",
-			Dockerfile:      "Dockerfile",
-			DockerContext:   ".",
-			Destination:     "gcr.io/kaniko-project/executor:v1.6.0",
-			Context:         ctx,
-			RegistryMirrors: "mirror.gcr.io,mycompany-docker-virtual.jfrog.io",
+			ExecutablePath:              "/kaniko/executor",
+			Dockerfile:                  "Dockerfile",
+			DockerContext:               ".",
+			Destination:                 "gcr.io/kaniko-project/executor:v1.6.0",
+			Context:                     ctx,
+			RegistryMirrors:             "mirror.gcr.io,mycompany-docker-virtual.jfrog.io",
+			SkipDefaultRegistryFallback: "false",
 		}
 		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
 		require.NoError(t, err)
@@ -151,12 +152,13 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 
 	t.Run("no registry mirrors", func(t *testing.T) {
 		var c = Config{
-			ExecutablePath:  "/kaniko/executor",
-			Dockerfile:      "Dockerfile",
-			DockerContext:   ".",
-			Destination:     "gcr.io/kaniko-project/executor:v1.6.0",
-			RegistryMirrors: "",
-			Context:         ctx,
+			ExecutablePath:              "/kaniko/executor",
+			Dockerfile:                  "Dockerfile",
+			DockerContext:               ".",
+			Destination:                 "gcr.io/kaniko-project/executor:v1.6.0",
+			RegistryMirrors:             "",
+			SkipDefaultRegistryFallback: "false",
+			Context:                     ctx,
 		}
 		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
 		require.NoError(t, err)
@@ -183,7 +185,7 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 			Dockerfile:                  "Dockerfile",
 			DockerContext:               ".",
 			Destination:                 "gcr.io/kaniko-project/executor:v1.6.0",
-			SkipDefaultRegistryFallback: false,
+			SkipDefaultRegistryFallback: "false",
 			Context:                     ctx,
 		}
 		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")

@@ -50,4 +50,4 @@ jobs:
       with:
         dockerfile: Dockerfile-test
         destination: registry.saas-dev.beescloud.com/staging/kaniko-action-test:${{ cloudbees.scm.sha }}
-        skip-default-registry-fallback: false
+        skip-default-registry-fallback: 'false'
