@@ -156,12 +156,14 @@ func (k *Config) cmdBuilder(digestFile string) (*exec.Cmd, error) {
 		cmdArgs = append(cmdArgs, "--digest-file", digestFile)
 	}
 
-	skipDefaultRegistryFallback, err := strconv.ParseBool(k.SkipDefaultRegistryFallback)
-	if err != nil {
-		return nil, err
-	}
-	if skipDefaultRegistryFallback {
-		cmdArgs = append(cmdArgs, "--skip-default-registry-fallback")
+	if len(k.SkipDefaultRegistryFallback) > 0 {
+		skipDefaultRegistryFallback, err := strconv.ParseBool(k.SkipDefaultRegistryFallback)
+		if err != nil {
+			return nil, err
+		}
+		if skipDefaultRegistryFallback {
+			cmdArgs = append(cmdArgs, "--skip-default-registry-fallback")
+		}
 	}
 
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)
