@@ -34,6 +34,10 @@ jobs:
   test:
     needs: [build]
     steps:
+    - name: get source code
+      uses: docker://alpine/git:v2.36.3
+      run: |
+        git clone https://${{secrets.GIT_SECRET_ACCESS_TOKEN}}@github.com/cloudbees-io/kaniko -b ${{ cloudbees.scm.branch }} .
     - name: Build test image
       uses: ./
       with:
