@@ -28,6 +28,7 @@ inputs:
       Registry mirror(s) to use for loading images.
       Type: CSV
   skip-default-registry-fallback:
+    default: 'false'
     description: >
       If set, fails build if registry-mirrors cannot pull image. If registry-mirrors is empty, this flag is ignored.
       Type: Boolean
