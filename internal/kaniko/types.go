@@ -15,7 +15,7 @@ type Config struct {
 	// RegistryMirrors contains registries used to pull images.
 	RegistryMirrors string `json:"registryMirrors,omitempty"`
 	// SkipDefaultRegistryFallback sets whether to use fallback if image isn't found in mirrors.
-	SkipDefaultRegistryFallback string `json:"skipDefaultRegistryFallback,omitempty"`
+	SkipDefaultRegistryFallback bool `json:"skipDefaultRegistryFallback,omitempty"`
 }
 
 type Auth struct {
