@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 
@@ -25,6 +26,9 @@ func Execute() error {
 }
 
 func run(command *cobra.Command, args []string) error {
+	if len(args) > 0 {
+		return fmt.Errorf("unknown arguments: %v", args)
+	}
 	newContext, cancel := context.WithCancel(context.Background())
 	osChannel := make(chan os.Signal, 1)
 	signal.Notify(osChannel, os.Interrupt)
