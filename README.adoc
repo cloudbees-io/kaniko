@@ -64,8 +64,7 @@ NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
 | `destination`
 | String
 | Yes
-| The target image to be published.
-Formatted as a CSV list, so you can pass multiple images.
+| The target image to be published. Formatted as a CSV list, so you can pass multiple images.
 
 | `build-args`
 | String
@@ -76,6 +75,16 @@ Formatted as a CSV list, so you can pass multiple images.
 | String
 | No
 | The label metadata added to the final image. Formatted as a CSV list, so you can pass multiple labels.
+
+| `registry-mirrors`
+| String
+| No
+| Registry mirror(s) to use for loading images. Formatted as a CSV list, so you can pass multiple registries.
+
+| `skip-default-registry-fallback`
+| String
+| No
+| If set, fails build if registry-mirrors cannot pull image. If registry-mirrors is empty, this flag is ignored. Accepts 'true' or 'false', default is 'false'.
 |===
 
 == Usage example

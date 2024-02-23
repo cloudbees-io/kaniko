@@ -78,6 +78,9 @@ func Test_cmdBuilder(t *testing.T) {
 	os.Setenv("DOCKER_BUILD_ARGS", "key1=value1,key2=value2")
 	os.Setenv("DOCKER_LABELS", "key_l1=l_value1,key_l2=l_value2")
 	os.Setenv("CLOUDBEES_OUTPUTS", "/tmp/fake-outputs")
+	defer os.Unsetenv("DOCKER_BUILD_ARGS")
+	defer os.Unsetenv("DOCKER_LABELS")
+	defer os.Unsetenv("CLOUDBEES_OUTPUTS")
 
 	cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
 	require.NoError(t, err)
@@ -110,6 +113,101 @@ func Test_cmdBuilder(t *testing.T) {
 	expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", exepectedArgs...)
 
 	require.Equal(t, expectedCmd.Args, cmd.Args)
+}
+
+func Test_CmdRegistryMirrors(t *testing.T) {
+	ctx := context.Background()
+	t.Run("multiple registry mirrors", func(t *testing.T) {
+		var c = Config{
+			ExecutablePath:              "/kaniko/executor",
+			Dockerfile:                  "Dockerfile",
+			DockerContext:               ".",
+			Destination:                 "gcr.io/kaniko-project/executor:v1.6.0",
+			Context:                     ctx,
+			RegistryMirrors:             "mirror.gcr.io,mycompany-docker-virtual.jfrog.io",
+			SkipDefaultRegistryFallback: false,
+		}
+		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
+		require.NoError(t, err)
+
+		expectedArgs := []string{
+			"--verbosity=debug",
+			"--ignore-path=/cloudbees/",
+			"--dockerfile",
+			"Dockerfile",
+			"--context",
+			".",
+			"--destination",
+			"gcr.io/kaniko-project/executor:v1.6.0",
+			"--registry-mirror",
+			"mirror.gcr.io",
+			"--registry-mirror",
+			"mycompany-docker-virtual.jfrog.io",
+			"--digest-file",
+			"/tmp/kaniko-test-digest-file",
+		}
+		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
+		require.Equal(t, expectedCmd.Args, cmd.Args)
+	})
+
+	t.Run("no registry mirrors", func(t *testing.T) {
+		var c = Config{
+			ExecutablePath:              "/kaniko/executor",
+			Dockerfile:                  "Dockerfile",
+			DockerContext:               ".",
+			Destination:                 "gcr.io/kaniko-project/executor:v1.6.0",
+			RegistryMirrors:             "",
+			SkipDefaultRegistryFallback: false,
+			Context:                     ctx,
+		}
+		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
+		require.NoError(t, err)
+
+		expectedArgs := []string{
+			"--verbosity=debug",
+			"--ignore-path=/cloudbees/",
+			"--dockerfile",
+			"Dockerfile",
+			"--context",
+			".",
+			"--destination",
+			"gcr.io/kaniko-project/executor:v1.6.0",
+			"--digest-file",
+			"/tmp/kaniko-test-digest-file",
+		}
+		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
+		require.Equal(t, expectedCmd.Args, cmd.Args)
+	})
+
+	t.Run("skip default registry fallback false", func(t *testing.T) {
+		var c = Config{
+			ExecutablePath:              "/kaniko/executor",
+			Dockerfile:                  "Dockerfile",
+			DockerContext:               ".",
+			Destination:                 "gcr.io/kaniko-project/executor:v1.6.0",
+			SkipDefaultRegistryFallback: false,
+			Context:                     ctx,
+		}
+		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
+		require.NoError(t, err)
+
+		expectedArgs := []string{
+			"--verbosity=debug",
+			"--ignore-path=/cloudbees/",
+			"--dockerfile",
+			"Dockerfile",
+			"--context",
+			".",
+			"--destination",
+			"gcr.io/kaniko-project/executor:v1.6.0",
+			"--digest-file",
+			"/tmp/kaniko-test-digest-file",
+		}
+
+		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
+		require.Equal(t, expectedCmd.Args, cmd.Args)
+	})
+
 }
 
 func Test_writeActionOutput(t *testing.T) {

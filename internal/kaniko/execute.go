@@ -99,6 +99,9 @@ func (k *Config) processLabels() []string {
 }
 
 func (k *Config) processRegistryMirrors() []string {
+	if len(k.RegistryMirrors) == 0 {
+		return []string{}
+	}
 	return strings.Split(k.RegistryMirrors, ",")
 }
 
