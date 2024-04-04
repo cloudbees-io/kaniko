@@ -27,7 +27,7 @@ jobs:
     - name: docker build and publish
       uses: cloudbees-io/kaniko@v1
       with:
-        destination: ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/kaniko-action:${{ cloudbees.scm.sha }}${{ cloudbees.scm.branch == 'main' && format(',{0}/staging/kaniko-action:0.0.7,{0}/staging/kaniko-action:latest', vars.STAGING_DOCKER_REGISTRY)  || format(',{0}/staging/kaniko-action:{1}', vars.STAGING_DOCKER_REGISTRY, cloudbees.version) }}
+        destination: ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/kaniko-action:${{ cloudbees.scm.sha }}${{ cloudbees.scm.branch == 'main' && format(',{0}/staging/kaniko-action:0.0.8,{0}/staging/kaniko-action:latest', vars.STAGING_DOCKER_REGISTRY)  || format(',{0}/staging/kaniko-action:{1}', vars.STAGING_DOCKER_REGISTRY, cloudbees.version) }}
         labels: maintaner=sdp-pod-3,email=engineering@cloudbees.io
         context: ${{ cloudbees.workspace }}
   
