@@ -89,7 +89,7 @@ NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
 | `verbosity`
 | String
 | No
-| The verbosity of logging when running the kaniko build. It can be one of: `panic`, `fatal`, `error`, `warn`, `info`, `debug`, `trace`
+| The verbosity of logging when running the Kaniko build. It can be one of: `panic`, `fatal`, `error`, `warn`, `info`, `debug`, `trace`. Default is `info`.
 
 |===
 

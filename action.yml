@@ -33,7 +33,7 @@ inputs:
       If set, fails build if registry-mirrors cannot pull image. If registry-mirrors is empty, this flag is ignored.
       Type: Boolean
   verbosity:
-    default: debug
+    default: info
     description: >
       Log level verbosity - panic, fatal, error, warn, info, debug, trace
 
