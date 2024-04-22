@@ -27,6 +27,10 @@ inputs:
     description: >
       Registry mirror(s) to use for loading images.
       Type: CSV
+  registry-maps:
+    description: >
+      Registry map(s) to use for loading images. You can mention several remap in a single flag too, separated by semi-colon.
+
   skip-default-registry-fallback:
     default: 'false'
     description: >
@@ -70,3 +74,4 @@ runs:
         DOCKER_CONFIG: ${{ cloudbees.home }}/.docker
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
         DOCKER_LABELS: ${{ inputs.labels }}
+        KANIKO_REGISTRY_MAP: ${{ inputs.registry-maps }}
