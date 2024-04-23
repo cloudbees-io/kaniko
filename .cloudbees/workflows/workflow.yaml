@@ -42,7 +42,7 @@ jobs:
     - name: Build image
       uses: cloudbees-io/kaniko@v1
       with:
-        destination: ${{ vars.staging_action_registry }}/actions/kaniko:${{ cloudbees.scm.sha }}
+        destination: ${{ vars.staging_action_registry }}/kaniko:${{ cloudbees.scm.sha }}
         labels: maintaner=sdp-pod-3,email=engineering@cloudbees.io
   
   # test:
