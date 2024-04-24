@@ -12,6 +12,8 @@ permissions:
 
 jobs:
   build:
+    outputs:
+      kaniko-image-digest: ${{ steps.build-image.outputs.digest }}
     steps:
     - name: Get source code
       uses: cloudbees-io/checkout@v1
@@ -39,6 +41,7 @@ jobs:
         password: ${{ secrets.e5bbc3_dockerhub_password }}
 
     - name: Build image
+      id: build-image
       uses: cloudbees-io/kaniko@v1
       with:
         destination: ${{ vars.staging_action_registry }}/kaniko-action:${{ cloudbees.scm.sha }}
@@ -46,6 +49,8 @@ jobs:
   
   test:
     needs: [build]
+    env:
+      EXPECTED_DIGEST: ${{ needs.build.outputs.kaniko-image-digest }}
     steps:
     - name: Get source code
       uses: cloudbees-io/checkout@v1
@@ -74,3 +79,12 @@ jobs:
         dockerfile: Dockerfile-test
         destination: ${{ vars.staging_action_registry }}/kaniko-action-test:${{ cloudbees.scm.sha }}
         skip-default-registry-fallback: 'false'
+
+    - name: Check test image
+      uses: docker://alpine:3.18
+      run: |
+        apk add -U --no-cache curl ca-certificates
+        curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 >/usr/local/bin/regctl
+        chmod 755 /usr/local/bin/regctl
+        echo $EXPECTED_DIGEST
+        regctl image digest ${{ vars.staging_action_registry }}/kaniko-action:${{ cloudbees.scm.sha }}
