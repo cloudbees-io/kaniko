@@ -86,7 +86,7 @@ jobs:
         # EXPECTED=${{ steps.build.outputs.digest }}
         EXPECTED=123
         ACTUAL=`regctl image digest ${{ vars.staging_action_registry }}/kaniko-action-test:${{ cloudbees.scm.sha }}`
-        if [ "$EXPECTED" != "$ACTUAL" ]; then
+        if [ "$EXPECTED" != "$ACTUAL" ]
         then
           echo "expected $EXPECTED, but got $ACTUAL"
           exit 1
