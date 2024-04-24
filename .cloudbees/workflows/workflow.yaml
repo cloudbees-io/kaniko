@@ -83,5 +83,6 @@ jobs:
         apk add -U --no-cache curl ca-certificates
         curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 >/usr/local/bin/regctl
         chmod 755 /usr/local/bin/regctl
-        echo ${{ steps.build.outputs.digest }}
-        regctl image digest ${{ vars.staging_action_registry }}/kaniko-action-test:${{ cloudbees.scm.sha }}
+        EXPECTED=${{ steps.build.outputs.digest }}
+        ACTUAL=`regctl image digest ${{ vars.staging_action_registry }}/kaniko-action-test:${{ cloudbees.scm.sha }}`
+        [ "$EXPECTED" = "$ACTUAL" ]
