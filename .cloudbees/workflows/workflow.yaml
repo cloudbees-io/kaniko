@@ -41,26 +41,36 @@ jobs:
     - name: Build image
       uses: cloudbees-io/kaniko@v1
       with:
-        destination: ${{ vars.staging_action_registry }}/kaniko:${{ cloudbees.scm.sha }}
+        destination: ${{ vars.staging_action_registry }}/kaniko-action:${{ cloudbees.scm.sha }}
         labels: maintaner=sdp-pod-3,email=engineering@cloudbees.io
   
-  # test:
-  #   needs: [build]
-  #   steps:
-  #   - name: Get source code
-  #     uses: docker://alpine/git:v2.36.3
-  #     run: |
-  #       git clone https://${{secrets.GIT_SECRET_ACCESS_TOKEN}}@github.com/cloudbees-io/kaniko -b ${{ cloudbees.scm.branch }} .
-  #   - name: Write docker config.json
-  #     uses: docker://alpine:3.18
-  #     env:
-  #       DOCKERCONFIGJSON: ${{ secrets.dockerconfigjson }}
-  #     run: |
-  #       mkdir -p $HOME/.docker
-  #       echo "$DOCKERCONFIGJSON" > $HOME/.docker/config.json
-  #   - name: Build test image
-  #     uses: ./
-  #     with:
-  #       dockerfile: Dockerfile-test
-  #       destination: registry.saas-dev.beescloud.com/staging/kaniko-action-test:${{ cloudbees.scm.sha }}
-  #       skip-default-registry-fallback: 'false'
+  test:
+    needs: [build]
+    steps:
+    - name: Get source code
+      uses: cloudbees-io/checkout@v1
+
+    - name: Login to AWS
+      uses: cloudbees-io/configure-aws-credentials@v1
+      with:
+        aws-region: us-east-1
+        role-to-assume: ${{ vars.oidc_staging_iam_role }}
+        role-duration-seconds: "3600"
+
+    - name: Configure container registry for ECR
+      uses: cloudbees-io/configure-ecr-credentials@v1
+
+    - name: Login to Dockerhub using CloudBees service account
+      uses: cloudbees-io/configure-oci-credentials@v1
+      with:
+        registry: docker.io
+        username: ${{ secrets.e5bbc3_dockerhub_user }}
+        password: ${{ secrets.e5bbc3_dockerhub_password }}
+
+    - name: Build test image
+      uses: ./cloudbees/testing
+      with:
+        context: ./cloudbees/testing
+        dockerfile: Dockerfile-test
+        destination: ${{ vars.staging_action_registry }}/kaniko-action-test:${{ cloudbees.scm.sha }}
+        skip-default-registry-fallback: 'false'
