@@ -70,3 +70,4 @@ runs:
         DOCKER_CONFIG: ${{ cloudbees.home }}/.docker
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
         DOCKER_LABELS: ${{ inputs.labels }}
+        ANOTHER_VAR: FOO
