@@ -86,4 +86,10 @@ jobs:
         # EXPECTED=${{ steps.build.outputs.digest }}
         EXPECTED=123
         ACTUAL=`regctl image digest ${{ vars.staging_action_registry }}/kaniko-action-test:${{ cloudbees.scm.sha }}`
-        [ "$EXPECTED" = "$ACTUAL" ]
+        if [ "$EXPECTED" != "$ACTUAL" ]; then
+        then
+          echo "expected $EXPECTED, but got $ACTUAL"
+          exit 1
+        else
+          echo "digests match"
+        fi
