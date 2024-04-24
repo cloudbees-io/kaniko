@@ -42,7 +42,7 @@ jobs:
       id: build-image
       uses: cloudbees-io/kaniko@v1
       with:
-        destination: ${{ vars.staging_action_registry }}/kaniko-action:${{ cloudbees.scm.sha }}
+        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ cloudbees.scm.sha }}
         labels: maintaner=sdp-pod-3,email=engineering@cloudbees.io
   
   test:
@@ -50,6 +50,16 @@ jobs:
     steps:
     - name: Get source code
       uses: cloudbees-io/checkout@v1
+
+    - name: Validate action
+      uses: docker://amazon/aws-cli:2.12.6
+      run: |
+        TESTING_SHA=$(cat .cloudbees/testing/action.yml | sha1sum)
+        ORIGINAL_SHA=$(sed -e 's|docker://public.ecr.aws/l7o7z1g8/actions/|docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/|g' < action.yml | sha1sum)
+        if [ "${TESTING_SHA}" != "${ORIGINAL_SHA}" ]; then
+          echo "Original action different from testing action"
+          exit 1
+        fi
 
     - name: Login to AWS
       uses: cloudbees-io/configure-aws-credentials@v1
@@ -74,7 +84,7 @@ jobs:
       with:
         context: ./.cloudbees/testing
         dockerfile: Dockerfile-test
-        destination: ${{ vars.staging_action_registry }}/kaniko-action-test:${{ cloudbees.scm.sha }}
+        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}
         skip-default-registry-fallback: 'false'
 
     - name: Check test image
@@ -85,12 +95,8 @@ jobs:
         chmod 755 /usr/local/bin/regctl
 
         EXPECTED=${{ steps.build.outputs.digest }}
-        ACTUAL=`regctl image digest ${{ vars.staging_action_registry }}/kaniko-action-test:${{ cloudbees.scm.sha }}`
-        
-        if [ "$EXPECTED" != "$ACTUAL" ]
-        then
+        ACTUAL=`regctl image digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}`
+        if [ "$EXPECTED" != "$ACTUAL" ]; then
           echo "expected $EXPECTED, but got $ACTUAL"
           exit 1
-        else
-          echo "digests match"
         fi
