@@ -70,7 +70,7 @@ jobs:
     - name: Build test image
       uses: ./cloudbees/testing
       with:
-        context: ./cloudbees/testing
+        context: ./.cloudbees/testing
         dockerfile: Dockerfile-test
         destination: ${{ vars.staging_action_registry }}/kaniko-action-test:${{ cloudbees.scm.sha }}
         skip-default-registry-fallback: 'false'
