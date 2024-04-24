@@ -68,7 +68,7 @@ jobs:
         password: ${{ secrets.e5bbc3_dockerhub_password }}
 
     - name: Build test image
-      uses: ./cloudbees/testing
+      uses: ./.cloudbees/testing
       with:
         context: ./.cloudbees/testing
         dockerfile: Dockerfile-test
