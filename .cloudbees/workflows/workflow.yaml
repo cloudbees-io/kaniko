@@ -16,6 +16,16 @@ jobs:
     - name: Get source code
       uses: cloudbees-io/checkout@v1
 
+    - name: Validate action
+      uses: docker://amazon/aws-cli:2.12.6
+      run: |
+        TESTING_SHA=$(cat .cloudbees/testing/action.yml | sha1sum)
+        ORIGINAL_SHA=$(sed -e 's|docker://public.ecr.aws/l7o7z1g8/actions/|docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/|g' < action.yml | sha1sum)
+        if [ "${TESTING_SHA}" != "${ORIGINAL_SHA}" ]; then
+          echo "Original action different from testing action"
+          exit 1
+        fi
+
     - name: Unit tests
       uses: docker://golang:1.20-alpine3.18
       run: |
@@ -50,16 +60,6 @@ jobs:
     steps:
     - name: Get source code
       uses: cloudbees-io/checkout@v1
-
-    - name: Validate action
-      uses: docker://amazon/aws-cli:2.12.6
-      run: |
-        TESTING_SHA=$(cat .cloudbees/testing/action.yml | sha1sum)
-        ORIGINAL_SHA=$(sed -e 's|docker://public.ecr.aws/l7o7z1g8/actions/|docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/|g' < action.yml | sha1sum)
-        if [ "${TESTING_SHA}" != "${ORIGINAL_SHA}" ]; then
-          echo "Original action different from testing action"
-          exit 1
-        fi
 
     - name: Login to AWS
       uses: cloudbees-io/configure-aws-credentials@v1
