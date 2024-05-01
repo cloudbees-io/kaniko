@@ -6,48 +6,97 @@ on:
   push:
     branches:
       - '**'
+
+permissions:
+  id-token: write
+
 jobs:
   build:
     steps:
-    - name: get source code
-      uses: docker://alpine/git:v2.36.3
+    - name: Get source code
+      uses: cloudbees-io/checkout@v1
+
+    - name: Validate action
+      uses: docker://amazon/aws-cli:2.12.6
       run: |
-        git clone https://${{secrets.GIT_SECRET_ACCESS_TOKEN}}@github.com/cloudbees-io/kaniko -b ${{ cloudbees.scm.branch }} .
+        TESTING_SHA=$(cat .cloudbees/testing/action.yml | sha1sum)
+        ORIGINAL_SHA=$(sed -e 's|docker://public.ecr.aws/l7o7z1g8/actions/|docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/|g' < action.yml | sha1sum)
+        if [ "${TESTING_SHA}" != "${ORIGINAL_SHA}" ]; then
+          echo "Original action different from testing action"
+          exit 1
+        fi
+
     - name: Unit tests
       uses: docker://golang:1.20-alpine3.18
       run: |
         go test --cover ./...
-    - name: Write docker config.json
-      uses: docker://alpine:3.18
-      env:
-        DOCKERCONFIGJSON: ${{ secrets.dockerconfigjson }}
-      run: |
-        mkdir -p $HOME/.docker
-        echo "$DOCKERCONFIGJSON" > $HOME/.docker/config.json
-    - name: docker build and publish
+
+    - name: Login to AWS
+      uses: cloudbees-io/configure-aws-credentials@v1
+      with:
+        aws-region: us-east-1
+        role-to-assume: ${{ vars.oidc_staging_iam_role }}
+        role-duration-seconds: "3600"
+
+    - name: Configure container registry for ECR
+      uses: cloudbees-io/configure-ecr-credentials@v1
+
+    - name: Login to Dockerhub using CloudBees service account
+      uses: cloudbees-io/configure-oci-credentials@v1
+      with:
+        registry: docker.io
+        username: ${{ secrets.e5bbc3_dockerhub_user }}
+        password: ${{ secrets.e5bbc3_dockerhub_password }}
+
+    - name: Build image
+      id: build-image
       uses: cloudbees-io/kaniko@v1
       with:
-        destination: ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/kaniko-action:${{ cloudbees.scm.sha }}${{ cloudbees.scm.branch == 'main' && format(',{0}/staging/kaniko-action:0.0.9,{0}/staging/kaniko-action:latest', vars.STAGING_DOCKER_REGISTRY)  || format(',{0}/staging/kaniko-action:{1}', vars.STAGING_DOCKER_REGISTRY, cloudbees.version) }}
+        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ cloudbees.scm.sha }}
         labels: maintainer=sdp-pod-3,email=engineering@cloudbees.io
-        context: ${{ cloudbees.workspace }}
   
   test:
     needs: [build]
     steps:
     - name: Get source code
-      uses: docker://alpine/git:v2.36.3
-      run: |
-        git clone https://${{secrets.GIT_SECRET_ACCESS_TOKEN}}@github.com/cloudbees-io/kaniko -b ${{ cloudbees.scm.branch }} .
-    - name: Write docker config.json
-      uses: docker://alpine:3.18
-      env:
-        DOCKERCONFIGJSON: ${{ secrets.dockerconfigjson }}
-      run: |
-        mkdir -p $HOME/.docker
-        echo "$DOCKERCONFIGJSON" > $HOME/.docker/config.json
-    - name: Build test image
-      uses: ./
+      uses: cloudbees-io/checkout@v1
+
+    - name: Login to AWS
+      uses: cloudbees-io/configure-aws-credentials@v1
       with:
+        aws-region: us-east-1
+        role-to-assume: ${{ vars.oidc_staging_iam_role }}
+        role-duration-seconds: "3600"
+
+    - name: Configure container registry for ECR
+      uses: cloudbees-io/configure-ecr-credentials@v1
+
+    - name: Login to Dockerhub using CloudBees service account
+      uses: cloudbees-io/configure-oci-credentials@v1
+      with:
+        registry: docker.io
+        username: ${{ secrets.e5bbc3_dockerhub_user }}
+        password: ${{ secrets.e5bbc3_dockerhub_password }}
+
+    - name: Build test image
+      id: build
+      uses: ./.cloudbees/testing
+      with:
+        context: ./.cloudbees/testing
         dockerfile: Dockerfile-test
-        destination: registry.saas-dev.beescloud.com/staging/kaniko-action-test:${{ cloudbees.scm.sha }}
+        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}
         skip-default-registry-fallback: 'false'
+
+    - name: Check test image
+      uses: docker://alpine:3.18
+      run: |
+        apk add -U --no-cache curl ca-certificates
+        curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 >/usr/local/bin/regctl
+        chmod 755 /usr/local/bin/regctl
+
+        EXPECTED=${{ steps.build.outputs.digest }}
+        ACTUAL=`regctl image digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}`
+        if [ "$EXPECTED" != "$ACTUAL" ]; then
+          echo "expected $EXPECTED, but got $ACTUAL"
+          exit 1
+        fi
