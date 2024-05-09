@@ -16,6 +16,8 @@ type Config struct {
 	RegistryMirrors string `json:"registryMirrors,omitempty"`
 	// SkipDefaultRegistryFallback sets whether to use fallback if image isn't found in mirrors.
 	SkipDefaultRegistryFallback bool `json:"skipDefaultRegistryFallback,omitempty"`
+	// Verbosity is the verbosity level of the Kaniko executor.
+	Verbosity string `json:"verbosity,omitempty"`
 }
 
 type Auth struct {

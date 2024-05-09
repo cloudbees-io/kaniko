@@ -53,7 +53,7 @@ jobs:
       uses: cloudbees-io/kaniko@v1
       with:
         destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ cloudbees.scm.sha }}
-        labels: maintaner=sdp-pod-3,email=engineering@cloudbees.io
+        labels: maintainer=sdp-pod-3,email=engineering@cloudbees.io
   
   test:
     needs: [build]

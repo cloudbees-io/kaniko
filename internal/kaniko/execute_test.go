@@ -74,6 +74,7 @@ func Test_cmdBuilder(t *testing.T) {
 		Context:                     ctx,
 		RegistryMirrors:             "mirror.gcr.io,mycompany-docker-virtual.jfrog.io",
 		SkipDefaultRegistryFallback: true,
+		Verbosity:                   "debug",
 	}
 	os.Setenv("DOCKER_BUILD_ARGS", "key1=value1,key2=value2")
 	os.Setenv("DOCKER_LABELS", "key_l1=l_value1,key_l2=l_value2")
@@ -85,9 +86,9 @@ func Test_cmdBuilder(t *testing.T) {
 	cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
 	require.NoError(t, err)
 
-	exepectedArgs := []string{
-		"--verbosity=debug",
+	expectedArgs := []string{
 		"--ignore-path=/cloudbees/",
+		"--verbosity=debug",
 		"--dockerfile",
 		"Dockerfile",
 		"--context",
@@ -110,7 +111,7 @@ func Test_cmdBuilder(t *testing.T) {
 		"/tmp/kaniko-test-digest-file",
 		"--skip-default-registry-fallback",
 	}
-	expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", exepectedArgs...)
+	expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 
 	require.Equal(t, expectedCmd.Args, cmd.Args)
 }
