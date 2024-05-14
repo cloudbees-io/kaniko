@@ -1,10 +1,10 @@
 module github.com/cloudbees-io/kaniko
 
-go 1.21
+go 1.22.0
 
 require (
-	github.com/spf13/cobra v1.7.0
-	github.com/stretchr/testify v1.8.4
+	github.com/spf13/cobra v1.8.0
+	github.com/stretchr/testify v1.9.0
 )
 
 require (
