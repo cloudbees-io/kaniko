@@ -127,13 +127,14 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 			Context:                     ctx,
 			RegistryMirrors:             "mirror.gcr.io,mycompany-docker-virtual.jfrog.io",
 			SkipDefaultRegistryFallback: false,
+			Verbosity:                   "debug",
 		}
 		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
 		require.NoError(t, err)
 
 		expectedArgs := []string{
-			"--verbosity=debug",
 			"--ignore-path=/cloudbees/",
+			"--verbosity=debug",
 			"--dockerfile",
 			"Dockerfile",
 			"--context",
@@ -160,13 +161,14 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 			RegistryMirrors:             "",
 			SkipDefaultRegistryFallback: false,
 			Context:                     ctx,
+			Verbosity:                   "debug",
 		}
 		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
 		require.NoError(t, err)
 
 		expectedArgs := []string{
-			"--verbosity=debug",
 			"--ignore-path=/cloudbees/",
+			"--verbosity=debug",
 			"--dockerfile",
 			"Dockerfile",
 			"--context",
@@ -188,13 +190,14 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 			Destination:                 "gcr.io/kaniko-project/executor:v1.6.0",
 			SkipDefaultRegistryFallback: false,
 			Context:                     ctx,
+			Verbosity:                   "debug",
 		}
 		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
 		require.NoError(t, err)
 
 		expectedArgs := []string{
-			"--verbosity=debug",
 			"--ignore-path=/cloudbees/",
+			"--verbosity=debug",
 			"--dockerfile",
 			"Dockerfile",
 			"--context",
