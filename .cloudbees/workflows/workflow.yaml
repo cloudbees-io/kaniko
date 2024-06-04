@@ -71,13 +71,6 @@ jobs:
     - name: Configure container registry for ECR
       uses: cloudbees-io/configure-ecr-credentials@v1
 
-    - name: Login to Dockerhub using CloudBees service account
-      uses: cloudbees-io/configure-oci-credentials@v1
-      with:
-        registry: docker.io
-        username: ${{ secrets.e5bbc3_dockerhub_user }}
-        password: ${{ secrets.e5bbc3_dockerhub_password }}
-
     - name: Build test image
       id: build
       uses: ./.cloudbees/testing
@@ -85,7 +78,9 @@ jobs:
         context: ./.cloudbees/testing
         dockerfile: Dockerfile-test
         destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}
-        skip-default-registry-fallback: 'false'
+        skip-default-registry-fallback: 'true'
+        registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
+        verbosity: debug
 
     - name: Check test image
       uses: docker://alpine:3.18
