@@ -41,19 +41,19 @@ jobs:
     - name: Configure container registry for ECR
       uses: cloudbees-io/configure-ecr-credentials@v1
 
-    - name: Login to Dockerhub using CloudBees service account
-      uses: cloudbees-io/configure-oci-credentials@v1
-      with:
-        registry: docker.io
-        username: ${{ secrets.e5bbc3_dockerhub_user }}
-        password: ${{ secrets.e5bbc3_dockerhub_password }}
-
     - name: Build image
       id: build-image
       uses: cloudbees-io/kaniko@v1
       with:
         destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ cloudbees.scm.sha }},020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:latest
         labels: maintainer=sdp-pod-3,email=engineering@cloudbees.io
+        registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
+
+    - name: Run TruffleHog Container Action
+      uses: cloudbees-io/trufflehog-secret-scan-container@v1
+      with:
+        image-location: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action
+        image-tag: ${{ cloudbees.scm.sha }}
   
   test:
     needs: [build]
