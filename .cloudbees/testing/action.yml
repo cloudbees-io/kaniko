@@ -27,6 +27,11 @@ inputs:
     description: >
       Registry mirror(s) to use for loading images.
       Type: CSV
+  registry-configuration:
+    description: >
+      CloudBees registry configuration file containing the registries to use for loading images.
+      By default it uses the file containing the registries configured under 'Integrations' in the CloudBees platform.
+    default: ${{ cloudbees.registries }}
   skip-default-registry-fallback:
     default: 'false'
     description: >
@@ -74,3 +79,4 @@ runs:
         DOCKER_CONFIG: ${{ cloudbees.home }}/.docker
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
         DOCKER_LABELS: ${{ inputs.labels }}
+        CLOUDBEES_REGISTRY_CONFIG: ${{ inputs.registry-configuration }}
