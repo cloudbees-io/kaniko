@@ -214,6 +214,73 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 
 }
 
+func Test_CmdRegistryMaps(t *testing.T) {
+	ctx := context.Background()
+	t.Run("registry maps from context var 'cloudbees.registries'", func(t *testing.T) {
+		var c = Config{
+			ExecutablePath:              "/kaniko/executor",
+			Dockerfile:                  "Dockerfile",
+			DockerContext:               ".",
+			Destination:                 "gcr.io/kaniko-project/executor:v1.6.0",
+			Context:                     ctx,
+			SkipDefaultRegistryFallback: false,
+			Verbosity:                   "debug",
+		}
+
+		require.NoError(t, os.Setenv("CLOUDBEES_REGISTRY_CONFIG", "testdata/registries.json"))
+		defer os.Unsetenv("CLOUDBEES_REGISTRY_CONFIG")
+
+		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
+		require.NoError(t, err)
+
+		expectedArgs := []string{
+			"--ignore-path=/cloudbees/",
+			"--verbosity=debug",
+			"--dockerfile",
+			"Dockerfile",
+			"--context",
+			".",
+			"--destination",
+			"gcr.io/kaniko-project/executor:v1.6.0",
+			"--registry-map",
+			"docker.io=mirror1.example.com/dockerhub;docker.io=mirror2.example.com/dockerhub;quay.io=mirror1.example.com/quay;quay.io=mirror2.example.com/quay",
+			"--digest-file",
+			"/tmp/kaniko-test-digest-file",
+		}
+		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
+		require.Equal(t, expectedCmd.Args, cmd.Args)
+	})
+	t.Run("no registry maps", func(t *testing.T) {
+		var c = Config{
+			ExecutablePath:              "/kaniko/executor",
+			Dockerfile:                  "Dockerfile",
+			DockerContext:               ".",
+			Destination:                 "gcr.io/kaniko-project/executor:v1.6.0",
+			Context:                     ctx,
+			SkipDefaultRegistryFallback: false,
+			Verbosity:                   "debug",
+		}
+
+		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
+		require.NoError(t, err)
+
+		expectedArgs := []string{
+			"--ignore-path=/cloudbees/",
+			"--verbosity=debug",
+			"--dockerfile",
+			"Dockerfile",
+			"--context",
+			".",
+			"--destination",
+			"gcr.io/kaniko-project/executor:v1.6.0",
+			"--digest-file",
+			"/tmp/kaniko-test-digest-file",
+		}
+		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
+		require.Equal(t, expectedCmd.Args, cmd.Args)
+	})
+}
+
 func Test_writeActionOutput(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "kaniko-test-")
 	require.NoError(t, err)

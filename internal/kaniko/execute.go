@@ -2,16 +2,20 @@ package kaniko
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/cloudbees-io/registry-config/pkg/registries"
 )
 
 const (
 	kanikoExecutorBinary = "executor"
+	registryConfigBinary = "registry-config"
 )
 
 func (k *Config) Run(ctx context.Context) (err error) {
@@ -105,6 +109,37 @@ func (k *Config) processRegistryMirrors() []string {
 	return strings.Split(k.RegistryMirrors, ",")
 }
 
+func registryMapsInConfig() (string, error) {
+	regConfig := os.Getenv("CLOUDBEES_REGISTRY_CONFIG")
+	if regConfig == "" {
+		return "", nil
+	}
+
+	if _, err := os.Stat(regConfig); err != nil && os.IsNotExist(err) {
+		return "", nil
+	}
+
+	b, err := os.ReadFile(regConfig)
+	if err != nil {
+		return "", fmt.Errorf("failed to read registry config file: %w", err)
+	}
+
+	var regs = registries.Config{}
+	if err := json.Unmarshal(b, &regs); err != nil {
+		return "", fmt.Errorf("failed to parse registry config file: %w", err)
+	}
+
+	var regmaps []string
+	for _, registry := range regs.Registries {
+		prefix := registry.Prefix
+		for _, mirror := range registry.Mirrors {
+			regmaps = append(regmaps, fmt.Sprintf("%s=%s", prefix, mirror))
+		}
+	}
+
+	return strings.Join(regmaps, ";"), nil
+}
+
 func (k *Config) lookupBinary() {
 	// The kaniko binary which executes the docker build and publish is called 'executor',
 	// which is in the path '/kaniko/executor'.
@@ -166,6 +201,15 @@ func (k *Config) cmdBuilder(digestFile string) (*exec.Cmd, error) {
 
 	for _, mirror := range k.processRegistryMirrors() {
 		cmdArgs = append(cmdArgs, "--registry-mirror", mirror)
+	}
+
+	registryMaps, err := registryMapsInConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	if registryMaps != "" {
+		cmdArgs = append(cmdArgs, "--registry-map", registryMaps)
 	}
 
 	if digestFile != "" {
