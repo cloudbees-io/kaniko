@@ -279,6 +279,43 @@ func Test_CmdRegistryMaps(t *testing.T) {
 		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 		require.Equal(t, expectedCmd.Args, cmd.Args)
 	})
+	t.Run("empty file in 'cloudbees.registries'", func(t *testing.T) {
+		var c = Config{
+			ExecutablePath:              "/kaniko/executor",
+			Dockerfile:                  "Dockerfile",
+			DockerContext:               ".",
+			Destination:                 "gcr.io/kaniko-project/executor:v1.6.0",
+			Context:                     ctx,
+			SkipDefaultRegistryFallback: false,
+			Verbosity:                   "debug",
+		}
+
+		d, err := os.MkdirTemp("", "kaniko-test-")
+		require.NoError(t, err)
+		defer os.RemoveAll(d)
+
+		require.NoError(t, os.WriteFile(filepath.Join(d, "registries.json"), []byte{}, 0644))
+		require.NoError(t, os.Setenv("CLOUDBEES_REGISTRY_CONFIG", filepath.Join(d, "registries.json")))
+		defer os.Unsetenv("CLOUDBEES_REGISTRY_CONFIG")
+
+		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
+		require.NoError(t, err)
+
+		expectedArgs := []string{
+			"--ignore-path=/cloudbees/",
+			"--verbosity=debug",
+			"--dockerfile",
+			"Dockerfile",
+			"--context",
+			".",
+			"--destination",
+			"gcr.io/kaniko-project/executor:v1.6.0",
+			"--digest-file",
+			"/tmp/kaniko-test-digest-file",
+		}
+		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
+		require.Equal(t, expectedCmd.Args, cmd.Args)
+	})
 }
 
 func Test_writeActionOutput(t *testing.T) {
