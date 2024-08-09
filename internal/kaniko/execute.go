@@ -124,6 +124,10 @@ func registryMapsInConfig() (string, error) {
 		return "", fmt.Errorf("failed to read registry config file: %w", err)
 	}
 
+	if len(b) == 0 {
+		return "", nil
+	}
+
 	var regs = registries.Config{}
 	if err := json.Unmarshal(b, &regs); err != nil {
 		return "", fmt.Errorf("failed to parse registry config file: %w", err)
