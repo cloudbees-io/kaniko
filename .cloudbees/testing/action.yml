@@ -78,7 +78,7 @@ runs:
       uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ action.scm.sha }}
       with:
         entrypoint: kaniko-action
-        args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --registry-mirrors "${{ inputs.registry-mirrors }}" --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}" --verbosity "${{ inputs.verbosity }}" --target "${{ inputs.target }}"{% endif %}
+        args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --registry-mirrors "${{ inputs.registry-mirrors }}" --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}" --verbosity "${{ inputs.verbosity }}" --target "${{ inputs.target }}"
       env:
         DOCKER_CONFIG: ${{ cloudbees.home }}/.docker
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
