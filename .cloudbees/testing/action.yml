@@ -26,7 +26,7 @@ inputs:
   target:
     description: >
       Build a specific target stage in a multi-stage Dockerfile.
-      Type: CSV
+      Type: string
   registry-mirrors:
     description: >
       Registry mirror(s) to use for loading images.
