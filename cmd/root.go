@@ -47,4 +47,5 @@ func init() {
 	cmd.Flags().StringVar(&cfg.RegistryMirrors, "registry-mirrors", "", "Registry mirrors to find images")
 	cmd.Flags().BoolVar(&cfg.SkipDefaultRegistryFallback, "skip-default-registry-fallback", false, "Fail if image is not found on registry mirrors")
 	cmd.Flags().StringVar(&cfg.Verbosity, "verbosity", "debug", "Verbosity level of the Kaniko executor")
+	cmd.Flags().StringVar(&cfg.Target, "target", "", "Target stage to build in a multi-stage Dockerfile")
 }

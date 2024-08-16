@@ -18,6 +18,8 @@ type Config struct {
 	SkipDefaultRegistryFallback bool `json:"skipDefaultRegistryFallback,omitempty"`
 	// Verbosity is the verbosity level of the Kaniko executor.
 	Verbosity string `json:"verbosity,omitempty"`
+	// Target field allows you to build a particular stag in multistage docker files.
+	Target string `json:"target,omitempty"`
 }
 
 type Auth struct {
