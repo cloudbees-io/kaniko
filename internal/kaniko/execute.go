@@ -225,7 +225,8 @@ func (k *Config) cmdBuilder(digestFile string) (*exec.Cmd, error) {
 	}
 
 	if k.Target != "" {
-		cmdArgs = append(cmdArgs, "--target", k.Target)
+		fmt.Printf("Test:%v", k.Target)
+		// cmdArgs = append(cmdArgs, "--target", k.Target)
 	}
 
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)
