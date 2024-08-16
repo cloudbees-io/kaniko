@@ -23,6 +23,10 @@ inputs:
     description: >
       Metadata to be associated with the resulting image.
       Type: CSV
+  target:
+    description: >
+      Build a specific target stage in a multi-stage Dockerfile.
+      Type: CSV
   registry-mirrors:
     description: >
       Registry mirror(s) to use for loading images.
@@ -71,10 +75,10 @@ runs:
   steps:
     - id: imgbuild
       name: Build and publish Docker image
-      uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ action.scm.sha }}
+      uses: docker://public.ecr.aws/l7o7z1g8/actions/kaniko-action:${{ action.scm.sha }}
       with:
         entrypoint: kaniko-action
-        args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --registry-mirrors "${{ inputs.registry-mirrors }}" --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}" --verbosity "${{ inputs.verbosity }}"
+        args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --registry-mirrors "${{ inputs.registry-mirrors }}" --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}" --verbosity "${{ inputs.verbosity }}" --target "${{ inputs.target }}"{% endif %}
       env:
         DOCKER_CONFIG: ${{ cloudbees.home }}/.docker
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
