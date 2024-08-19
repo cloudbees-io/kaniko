@@ -75,7 +75,7 @@ runs:
     - id: imgbuild
       name: Build and publish Docker image
       # uses: docker://public.ecr.aws/l7o7z1g8/actions/kaniko-action:${{ action.scm.sha }}
-      uses: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:d133641ee920b0fd5a70c388f5491fe36fabe4fc
+      uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:d133641ee920b0fd5a70c388f5491fe36fabe4fc
       with:
         entrypoint: kaniko-action
         args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --registry-mirrors "${{ inputs.registry-mirrors }}" --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}" --verbosity "${{ inputs.verbosity }}" --target "${{ inputs.target }}"
