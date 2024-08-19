@@ -43,13 +43,11 @@ jobs:
 
     - name: Build image
       id: build-image
-      uses: cloudbees-io/kaniko@CBP-4082
+      uses: cloudbees-io/kaniko@v1
       with:
-        dockerfile: Dockerfile-Test
         destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ cloudbees.scm.sha }},020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:latest
         labels: maintainer=sdp-pod-3,email=engineering@cloudbees.io
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
-        target: dev
 
     - name: Run TruffleHog Container Action
       uses: cloudbees-io/trufflehog-secret-scan-container@v1
