@@ -24,8 +24,9 @@ inputs:
       Metadata to be associated with the resulting image.
       Type: CSV
   target:
-    description: "Build a specific target stage in a multi-stage Dockerfile."
-    required: false
+    description: >
+      Build a specific target stage in a multi-stage Dockerfile.
+      Type: string
   registry-mirrors:
     description: >
       Registry mirror(s) to use for loading images.
