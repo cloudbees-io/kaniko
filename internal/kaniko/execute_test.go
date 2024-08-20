@@ -75,6 +75,7 @@ func Test_cmdBuilder(t *testing.T) {
 		RegistryMirrors:             "mirror.gcr.io,mycompany-docker-virtual.jfrog.io",
 		SkipDefaultRegistryFallback: true,
 		Verbosity:                   "debug",
+		Target:                      "final-stage",
 	}
 	os.Setenv("DOCKER_BUILD_ARGS", "key1=value1,key2=value2")
 	os.Setenv("DOCKER_LABELS", "key_l1=l_value1,key_l2=l_value2")
@@ -110,6 +111,8 @@ func Test_cmdBuilder(t *testing.T) {
 		"--digest-file",
 		"/tmp/kaniko-test-digest-file",
 		"--skip-default-registry-fallback",
+		"--target",
+		"final-stage",
 	}
 	expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 
@@ -128,6 +131,7 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 			RegistryMirrors:             "mirror.gcr.io,mycompany-docker-virtual.jfrog.io",
 			SkipDefaultRegistryFallback: false,
 			Verbosity:                   "debug",
+			Target:                      "final-stage",
 		}
 		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
 		require.NoError(t, err)
@@ -147,6 +151,8 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 			"mycompany-docker-virtual.jfrog.io",
 			"--digest-file",
 			"/tmp/kaniko-test-digest-file",
+			"--target", // Add target to expected arguments
+			"final-stage",
 		}
 		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 		require.Equal(t, expectedCmd.Args, cmd.Args)
@@ -162,6 +168,7 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 			SkipDefaultRegistryFallback: false,
 			Context:                     ctx,
 			Verbosity:                   "debug",
+			Target:                      "final-stage",
 		}
 		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
 		require.NoError(t, err)
@@ -177,6 +184,8 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 			"gcr.io/kaniko-project/executor:v1.6.0",
 			"--digest-file",
 			"/tmp/kaniko-test-digest-file",
+			"--target", // Add target to expected arguments
+			"final-stage",
 		}
 		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 		require.Equal(t, expectedCmd.Args, cmd.Args)
@@ -191,6 +200,7 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 			SkipDefaultRegistryFallback: false,
 			Context:                     ctx,
 			Verbosity:                   "debug",
+			Target:                      "final-stage",
 		}
 		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
 		require.NoError(t, err)
@@ -206,6 +216,8 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 			"gcr.io/kaniko-project/executor:v1.6.0",
 			"--digest-file",
 			"/tmp/kaniko-test-digest-file",
+			"--target", // Add target to expected arguments
+			"final-stage",
 		}
 
 		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
@@ -225,6 +237,7 @@ func Test_CmdRegistryMaps(t *testing.T) {
 			Context:                     ctx,
 			SkipDefaultRegistryFallback: false,
 			Verbosity:                   "debug",
+			Target:                      "final-stage",
 		}
 
 		require.NoError(t, os.Setenv("CLOUDBEES_REGISTRY_CONFIG", "testdata/registries.json"))
@@ -246,6 +259,8 @@ func Test_CmdRegistryMaps(t *testing.T) {
 			"docker.io=mirror1.example.com/dockerhub;docker.io=mirror2.example.com/dockerhub;quay.io=mirror1.example.com/quay;quay.io=mirror2.example.com/quay",
 			"--digest-file",
 			"/tmp/kaniko-test-digest-file",
+			"--target", // Add target to expected arguments
+			"final-stage",
 		}
 		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 		require.Equal(t, expectedCmd.Args, cmd.Args)
@@ -259,6 +274,7 @@ func Test_CmdRegistryMaps(t *testing.T) {
 			Context:                     ctx,
 			SkipDefaultRegistryFallback: false,
 			Verbosity:                   "debug",
+			Target:                      "final-stage",
 		}
 
 		cmd, err := c.cmdBuilder("/tmp/kaniko-test-digest-file")
@@ -275,6 +291,8 @@ func Test_CmdRegistryMaps(t *testing.T) {
 			"gcr.io/kaniko-project/executor:v1.6.0",
 			"--digest-file",
 			"/tmp/kaniko-test-digest-file",
+			"--target", // Add target to expected arguments
+			"final-stage",
 		}
 		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 		require.Equal(t, expectedCmd.Args, cmd.Args)
@@ -288,6 +306,7 @@ func Test_CmdRegistryMaps(t *testing.T) {
 			Context:                     ctx,
 			SkipDefaultRegistryFallback: false,
 			Verbosity:                   "debug",
+			Target:                      "final-stage",
 		}
 
 		d, err := os.MkdirTemp("", "kaniko-test-")
@@ -312,6 +331,8 @@ func Test_CmdRegistryMaps(t *testing.T) {
 			"gcr.io/kaniko-project/executor:v1.6.0",
 			"--digest-file",
 			"/tmp/kaniko-test-digest-file",
+			"--target", // Add target to expected arguments
+			"final-stage",
 		}
 		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 		require.Equal(t, expectedCmd.Args, cmd.Args)
