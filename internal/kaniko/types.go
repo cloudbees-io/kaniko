@@ -20,6 +20,8 @@ type Config struct {
 	Verbosity string `json:"verbosity,omitempty"`
 	// Target field allows you to build a particular stage in multistage docker files.
 	Target string `json:"target,omitempty"`
+	// TarPath is an optional path to save the image as a tar file.
+	TarPath string `json:"tarPath,omitempty"`
 }
 
 type Auth struct {

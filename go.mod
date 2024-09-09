@@ -1,9 +1,9 @@
 module github.com/cloudbees-io/kaniko
 
-go 1.22.4
+go 1.23.0
 
 require (
-	github.com/cloudbees-io/registry-config v0.0.0-20240808183552-3f6794de34b7
+	github.com/cloudbees-io/registry-config v0.0.0-20240808192011-86b0b147c63e
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 )
