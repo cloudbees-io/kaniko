@@ -89,7 +89,7 @@ runs:
           --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}"
           --verbosity "${{ inputs.verbosity }}"
           --target "${{ inputs.target }}"
-          ${{ inputs.tar-path && format('--tarPath {0}', inputs.tar-path) || '' }}
+          ${{ inputs.tar-path && format('--tar-path "{0}"', inputs.tar-path) || '' }}
       env:
         DOCKER_CONFIG: ${{ cloudbees.home }}/.docker
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
