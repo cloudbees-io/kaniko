@@ -77,7 +77,7 @@ runs:
   using: composite
   steps:
     - id: imgbuild
-      name: Build, push, and optionally save Docker image as tar
+      name: Build, publish, and optionally save Docker image as a tar archive.
       uses: docker://public.ecr.aws/l7o7z1g8/actions/kaniko-action:${{ action.scm.sha }}
       with:
         entrypoint: kaniko-action
