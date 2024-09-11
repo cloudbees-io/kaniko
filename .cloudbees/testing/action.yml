@@ -17,7 +17,7 @@ inputs:
     required: true
   tar-path:
     description: 'Path to save the image as a tar file.'
-    required: false    
+    required: false
   build-args:
     description: >
       Docker build arguments.
@@ -77,11 +77,19 @@ runs:
   using: composite
   steps:
     - id: imgbuild
-      name: Build and publish Docker image
+      name: Build, publish, and optionally save Docker image as a tar archive.
       uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ action.scm.sha }}
       with:
         entrypoint: kaniko-action
-        args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --registry-mirrors "${{ inputs.registry-mirrors }}" --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}" --verbosity "${{ inputs.verbosity }}" --target "${{ inputs.target }}"   ${{ inputs.tar-path && format('--tarPath {0}', inputs.tar-path) || '' }}
+        args: |
+          --dockerfile "${{ inputs.dockerfile }}"
+          --context "${{ inputs.context }}"
+          --destination "${{ inputs.destination }}"
+          --registry-mirrors "${{ inputs.registry-mirrors }}"
+          --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}"
+          --verbosity "${{ inputs.verbosity }}"
+          --target "${{ inputs.target }}"
+          ${{ inputs.tar-path && format('--tarPath {0}', inputs.tar-path) || '' }}
       env:
         DOCKER_CONFIG: ${{ cloudbees.home }}/.docker
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
