@@ -1,7 +1,7 @@
 apiVersion: automation.cloudbees.io/v1alpha1
 kind: action
 name: 'Kaniko build and push'
-description: 'Build and publish Docker images from a Dockerfile using Kaniko'
+description: 'Build and publish Docker images from a Dockerfile using Kaniko. Optionally, save the image as a tar file.'
 
 inputs:
   dockerfile:
