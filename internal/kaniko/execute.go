@@ -230,7 +230,7 @@ func (k *Config) cmdBuilder(digestFile string) (*exec.Cmd, error) {
 	}
 
 	if k.TarPath != "" {
-		cmdArgs = append(cmdArgs, "--tarPath", k.TarPath)
+		cmdArgs = append(cmdArgs, "--tar-path", k.TarPath)
 	}
 
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)

@@ -49,5 +49,5 @@ func init() {
 	cmd.Flags().BoolVar(&cfg.SkipDefaultRegistryFallback, "skip-default-registry-fallback", false, "Fail if image is not found on registry mirrors")
 	cmd.Flags().StringVar(&cfg.Verbosity, "verbosity", "debug", "Verbosity level of the Kaniko executor")
 	cmd.Flags().StringVar(&cfg.Target, "target", "", "Target stage to build in a multi-stage Dockerfile")
-	cmd.Flags().StringVar(&cfg.TarPath, "tarPath", "", "Path to save the image tar file (optional). If set, the image will be saved as a tar file.")
+	cmd.Flags().StringVar(&cfg.TarPath, "tar-path", "", "Path to save the image tar file (optional). If set, the image will be saved as a tar file.")
 }
