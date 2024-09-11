@@ -81,7 +81,7 @@ jobs:
         skip-default-registry-fallback: 'true'
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
         verbosity: debug
-        tar-path: "./output/image.tar"
+        tar-path: ${{ cloudbees.home }}/image.tar
 
     - name: Check test image
       uses: docker://alpine:3.18
@@ -97,5 +97,5 @@ jobs:
           exit 1
         fi
 
-        docker load -i "./output/image.tar"  
+        docker load -i "${{ cloudbees.home }}/image.tar"  
 
