@@ -81,6 +81,7 @@ jobs:
         skip-default-registry-fallback: 'true'
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
         verbosity: debug
+        tar-path: "./output/image.tar"
 
     - name: Check test image
       uses: docker://alpine:3.18
@@ -95,4 +96,6 @@ jobs:
           echo "expected $EXPECTED, but got $ACTUAL"
           exit 1
         fi
+
+        docker load -i "./output/image.tar"  
 

@@ -15,7 +15,7 @@ inputs:
       Target image(s) that will be published to the registries configured in the file ${HOME}/.docker/config.json
       Type: CSV
     required: true
-  tar-file:
+  tar-path:
     description: 'Path to save the image as a tar file.'
     required: false
   build-args:
@@ -89,7 +89,7 @@ runs:
           --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}"
           --verbosity "${{ inputs.verbosity }}"
           --target "${{ inputs.target }}"
-          ${{ inputs.tar-file && format('--tarPath {0}', inputs.tar-file) || '' }}
+          ${{ inputs.tar-path && format('--tarPath {0}', inputs.tar-path) || '' }}
       env:
         DOCKER_CONFIG: ${{ cloudbees.home }}/.docker
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
