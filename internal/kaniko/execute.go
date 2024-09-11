@@ -229,6 +229,10 @@ func (k *Config) cmdBuilder(digestFile string) (*exec.Cmd, error) {
 		cmdArgs = append(cmdArgs, "--target", k.Target)
 	}
 
+	if k.TarPath != "" {
+		cmdArgs = append(cmdArgs, "--tar-path", k.TarPath)
+	}
+
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)
 	kanikoCmd.Env = k.env()
 

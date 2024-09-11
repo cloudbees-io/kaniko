@@ -1,7 +1,7 @@
 apiVersion: automation.cloudbees.io/v1alpha1
 kind: action
 name: 'Kaniko build and push'
-description: 'Build and publish Docker images from a Dockerfile using Kaniko'
+description: 'Build and publish Docker images from a Dockerfile using Kaniko. Optionally, save the image as a tar file.'
 
 inputs:
   dockerfile:
@@ -15,6 +15,9 @@ inputs:
       Target image(s) that will be published to the registries configured in the file ${HOME}/.docker/config.json
       Type: CSV
     required: true
+  tar-path:
+    description: 'Full path, including filename, where the image tar file should be saved.'
+    required: false
   build-args:
     description: >
       Docker build arguments.
@@ -74,11 +77,19 @@ runs:
   using: composite
   steps:
     - id: imgbuild
-      name: Build and publish Docker image
+      name: Build, publish, and optionally save Docker image as a tar archive.
       uses: docker://public.ecr.aws/l7o7z1g8/actions/kaniko-action:${{ action.scm.sha }}
       with:
         entrypoint: kaniko-action
-        args: --dockerfile "${{ inputs.dockerfile }}" --context "${{ inputs.context }}" --destination "${{ inputs.destination }}" --registry-mirrors "${{ inputs.registry-mirrors }}" --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}" --verbosity "${{ inputs.verbosity }}" --target "${{ inputs.target }}"
+        args: |
+          --dockerfile "${{ inputs.dockerfile }}"
+          --context "${{ inputs.context }}"
+          --destination "${{ inputs.destination }}"
+          --registry-mirrors "${{ inputs.registry-mirrors }}"
+          --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}"
+          --verbosity "${{ inputs.verbosity }}"
+          --target "${{ inputs.target }}"
+          ${{ inputs.tar-path && format('--tar-path "{0}"', inputs.tar-path) || '' }}
       env:
         DOCKER_CONFIG: ${{ cloudbees.home }}/.docker
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
