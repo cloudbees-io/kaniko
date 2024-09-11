@@ -27,7 +27,7 @@ jobs:
         fi
 
     - name: Unit tests
-      uses: docker://golang:1.22.4
+      uses: docker://golang:1.23.0
       run: |
         go test --cover ./...
 
