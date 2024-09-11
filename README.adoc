@@ -66,6 +66,11 @@ NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
 | Yes
 | The target image to be published. Formatted as a CSV list, so you can pass multiple images.
 
+| `tar-path`
+| String
+| No
+| Full path including the filename where the image tar file should be saved. This option allows saving the built image as a tarball. If not specified, the image will not be saved as a tar file.
+
 | `build-args`
 | String
 | No
