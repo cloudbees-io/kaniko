@@ -97,5 +97,10 @@ jobs:
           exit 1
         fi
 
-        docker load -i "${{ cloudbees.home }}/image.tar"  
+        if stat "${{ cloudbees.home }}/image.tar"; then
+          echo "Tar file exists."
+        else
+          echo "Tar file does not exist."
+          exit 1
+        fi    
 
