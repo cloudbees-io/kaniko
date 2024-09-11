@@ -16,7 +16,7 @@ inputs:
       Type: CSV
     required: true
   tar-file:
-    description: 'Optional path to save the image tar file. If set, the image will be saved as a tar file at this path.'
+    description: 'Path to save the image as a tar file.'
     required: false
   build-args:
     description: >
