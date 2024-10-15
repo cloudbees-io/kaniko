@@ -1,12 +1,12 @@
-FROM alpine:3.19 AS build
+FROM alpine:3.20 AS build
 RUN echo test > /test-file
 
 FROM docker.io/rancher/cowsay AS cowsay
 RUN cowsay hello
 
-FROM quay.io/containers/podman:v4.9.0 as podman
+FROM quay.io/containers/podman:v5.2.3 as podman
 
-FROM alpine:3.19
+FROM alpine:3.20
 RUN echo test
 COPY --from=build /test-file /test-file
 COPY --from=cowsay /usr/local/bin/cowsay /usr/local/bin/cowsay

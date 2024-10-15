@@ -1,6 +1,6 @@
 module github.com/cloudbees-io/kaniko
 
-go 1.23.0
+go 1.23.2
 
 require (
 	github.com/cloudbees-io/registry-config v0.0.0-20240808192011-86b0b147c63e
