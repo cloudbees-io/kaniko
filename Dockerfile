@@ -1,4 +1,4 @@
-FROM golang:1.23.0-alpine3.19 AS build
+FROM golang:1.23.2-alpine3.20 AS build
 
 WORKDIR /work
 
@@ -10,7 +10,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o /usr/local/bin/kaniko-action main.go
 
-FROM gcr.io/kaniko-project/executor:v1.23.2
+FROM gcr.io/kaniko-project/executor
 
 COPY --from=build /usr/local/bin/kaniko-action /usr/local/bin/kaniko-action
 
