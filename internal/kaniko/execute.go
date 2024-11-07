@@ -13,12 +13,10 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 const (
 	kanikoExecutorBinary = "executor"
-	registryConfigBinary = "registry-config"
 )
 
 func (k *Config) Run(ctx context.Context) (err error) {
@@ -51,116 +49,91 @@ func (k *Config) Run(ctx context.Context) (err error) {
 		}
 	}
 
-	if k.SendEvent {
-		err = k.sendEvent(k.processDestinations()[0], digestFile)
+	err = k.createArtifactInfo(k.processDestinations())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k *Config) createArtifactInfo(destinations []string) error {
+
+	for _, destination := range destinations {
+		fmt.Printf("Sending artifact info for destination: %v\n", destination)
+
+		apiUrl := os.Getenv("CLOUDBEES_API_URL")
+		if apiUrl == "" {
+			return fmt.Errorf("failed to send artifact info because of missed CLOUDBEES_API_URL variable")
+		}
+
+		apiToken := os.Getenv("CLOUDBEES_API_TOKEN")
+		if apiToken == "" {
+			return fmt.Errorf("failed to send artifact info because of missed CLOUDBEES_API_TOKEN variable")
+		}
+
+		requestURL, err := url.JoinPath(apiUrl, "/v2/workflows/runs/artifactinfos")
 		if err != nil {
 			return err
 		}
-	}
 
+		artifactInfo, err := buildCreateArtifactInfoRequest(destination)
+
+		artifactInfoBytes, err := json.Marshal(artifactInfo)
+		if err != nil {
+			return err
+		}
+
+		client := &http.Client{}
+
+		apiReq, err := http.NewRequest(
+			"POST",
+			requestURL,
+			bytes.NewReader(artifactInfoBytes),
+		)
+		if err != nil {
+			return err
+		}
+
+		apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiToken))
+		apiReq.Header.Set("Content-Type", "application/json")
+		apiReq.Header.Set("Accept", "application/json")
+
+		resp, err := client.Do(apiReq)
+		if err != nil {
+			return err
+		}
+		defer func() { _ = resp.Body.Close() }()
+
+		if resp.StatusCode != 200 {
+			return fmt.Errorf("failed to create artifact info: \nPOST %s\nHTTP/%d %s\n", requestURL, resp.StatusCode, resp.Status)
+		}
+	}
 	return nil
 }
 
-func (k *Config) sendEvent(destination, digestFile string) error {
-	fmt.Printf("Sending event for destination: %v\n", destination)
+// CreateArtifactInfoObj is a map of key-value pairs that is used to store CreateArtifactInfoRequest data
+type CreateArtifactInfoObj map[string]interface{}
 
-	apiUrl := os.Getenv("CLOUDBEES_API_URL")
-	if apiUrl == "" {
-		return fmt.Errorf("failed to send event because of missed CLOUDBEES_API_URL variable")
+func buildCreateArtifactInfoRequest(destination string) (CreateArtifactInfoObj, error) {
+
+	destnParts := strings.Split(destination, "/")
+	imgInfo := destnParts[len(destnParts)-1]
+	imgNameAndVersion := strings.Split(imgInfo, ":")
+	if len(imgNameAndVersion) != 2 {
+		return nil, fmt.Errorf("failed to build kaniko artifact info request: invalid destination format")
+	}
+	imgName := imgNameAndVersion[0]
+	imgVer := imgNameAndVersion[1]
+
+	artInfo := CreateArtifactInfoObj{
+		"name":    imgName,
+		"version": imgVer,
+		"url":     destination,
+		"type":    "docker",
 	}
 
-	apiToken := os.Getenv("CLOUDBEES_API_TOKEN")
-	if apiToken == "" {
-		return fmt.Errorf("failed to send event because of missed CLOUDBEES_API_TOKEN variable")
-	}
-
-	requestURL, err := url.JoinPath(apiUrl, "/v2/resources/cdevents")
-	if err != nil {
-		return err
-	}
-
-	cdEvent := buildCDEvent(destination, digestFile)
-
-	cdEventBytes, err := json.Marshal(&cdEvent)
-	if err != nil {
-		return err
-	}
-
-	client := &http.Client{}
-
-	apiReq, err := http.NewRequest(
-		"POST",
-		requestURL,
-		bytes.NewReader(cdEventBytes),
-	)
-	if err != nil {
-		return err
-	}
-
-	apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiToken))
-	apiReq.Header.Set("Content-Type", "application/json")
-	apiReq.Header.Set("Accept", "application/json")
-
-	resp, err := client.Do(apiReq)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("failed to send event: \nPOST %s\nHTTP/%d %s\n", requestURL, resp.StatusCode, resp.Status)
-	}
-
-	return nil
-}
-
-// EventData is a map of key-value pairs that can be used to store nested event data.
-type EventData map[string]interface{}
-
-// Schema: https://github.com/cdevents/spec/blob/v0.4.0/schemas/artifactpublished.json
-// Example: https://github.com/cdevents/spec/blob/v0.4.0/examples/artifact_published.json
-func buildCDEvent(purl, digestFile string) EventData {
-	// Create event with fuzzy structure based on the EventData type.
-	cdEvent := EventData{
-		"context": EventData{
-			"version":   "0.4.0",
-			"id":        purl + "-artifact-published",
-			"source":    "https://cloudbees.io",
-			"type":      "dev.cdevents.artifact.published.0.1.1",
-			"timestamp": time.Now().Format(time.RFC3339),
-		},
-		"subject": EventData{
-			"id":     purl,
-			"source": "https://cloudbees.io",
-			"type":   "artifact",
-		},
-	}
-
-	// add content block if change or signature available
-	scmRepo := os.Getenv("CLOUDBEES_SCM_REPOSITORY")
-	scmSha := os.Getenv("CLOUDBEES_SCM_SHA")
-	if scmRepo != "" && scmSha != "" {
-		cdEvent["subject"].(EventData)["content"] = EventData{
-			"change": EventData{
-				"id":     scmSha,
-				"source": scmRepo,
-			},
-		}
-	}
-
-	digestFileContent, err := os.ReadFile(digestFile)
-	if err == nil {
-		digest := string(digestFileContent)
-		if digest != "" {
-			_, exists := cdEvent["subject"].(EventData)["content"].(EventData)
-			if !exists {
-				cdEvent["subject"].(EventData)["content"] = EventData{}
-			}
-			cdEvent["subject"].(EventData)["content"].(EventData)["signature"] = digest
-		}
-	}
-
-	return cdEvent
+	return artInfo, nil
 }
 
 func (k *Config) writeActionOutputs(outDir, digestFile string) error {
