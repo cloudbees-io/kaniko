@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/cloudbees-io/registry-config/pkg/registries"
 	"log"
 	"net/http"
 	"net/url"
@@ -13,11 +12,26 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/cloudbees-io/registry-config/pkg/registries"
 )
 
 const (
 	kanikoExecutorBinary = "executor"
 )
+
+// HTTPClient defines the methods that we need for our HTTP client.
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+type HttpClient struct {
+	client *http.Client
+}
+
+func (r *HttpClient) Do(req *http.Request) (*http.Response, error) {
+	return r.client.Do(req)
+}
 
 func (k *Config) Run(ctx context.Context) (err error) {
 	k.Context = ctx
@@ -49,7 +63,7 @@ func (k *Config) Run(ctx context.Context) (err error) {
 		}
 	}
 
-	err = k.createArtifactInfo(k.processDestinations())
+	err = k.createArtifactInfo(k.client, k.processDestinations())
 	if err != nil {
 		return err
 	}
@@ -57,19 +71,27 @@ func (k *Config) Run(ctx context.Context) (err error) {
 	return nil
 }
 
-func (k *Config) createArtifactInfo(destinations []string) error {
+func (k *Config) createArtifactInfo(client HTTPClient, destinations []string) error {
+
+	if client == nil {
+		return fmt.Errorf("client is nil")
+	}
+
+	if destinations == nil || len(destinations) == 0 {
+		return fmt.Errorf("destinations is empty")
+	}
 
 	for _, destination := range destinations {
 		fmt.Printf("Sending artifact info for destination: %v\n", destination)
 
 		apiUrl := os.Getenv("CLOUDBEES_API_URL")
 		if apiUrl == "" {
-			return fmt.Errorf("failed to send artifact info because of missed CLOUDBEES_API_URL variable")
+			return fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_API_URL environment variable")
 		}
 
 		apiToken := os.Getenv("CLOUDBEES_API_TOKEN")
 		if apiToken == "" {
-			return fmt.Errorf("failed to send artifact info because of missed CLOUDBEES_API_TOKEN variable")
+			return fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_API_TOKEN environment variable")
 		}
 
 		requestURL, err := url.JoinPath(apiUrl, "/v2/workflows/runs/artifactinfos")
@@ -77,14 +99,15 @@ func (k *Config) createArtifactInfo(destinations []string) error {
 			return err
 		}
 
-		artifactInfo, err := buildCreateArtifactInfoRequest(destination)
+		artifactInfo, err := k.buildCreateArtifactInfoRequest(destination)
+		if err != nil {
+			return err
+		}
 
 		artifactInfoBytes, err := json.Marshal(artifactInfo)
 		if err != nil {
 			return err
 		}
-
-		client := &http.Client{}
 
 		apiReq, err := http.NewRequest(
 			"POST",
@@ -115,22 +138,42 @@ func (k *Config) createArtifactInfo(destinations []string) error {
 // CreateArtifactInfoObj is a map of key-value pairs that is used to store CreateArtifactInfoRequest data
 type CreateArtifactInfoObj map[string]interface{}
 
-func buildCreateArtifactInfoRequest(destination string) (CreateArtifactInfoObj, error) {
+func (k *Config) buildCreateArtifactInfoRequest(destination string) (CreateArtifactInfoObj, error) {
+
+	if destination == "" {
+		return nil, fmt.Errorf("destination is empty")
+	}
+
+	runId := os.Getenv("CLOUDBEES_RUN_ID")
+	if runId == "" {
+		return nil, fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_RUN_ID environment variable")
+	}
+
+	runAttempt := os.Getenv("CLOUDBEES_RUN_ATTEMPT")
+	if runAttempt == "" {
+		return nil, fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_RUN_ATTEMPT environment variable")
+	}
 
 	destnParts := strings.Split(destination, "/")
 	imgInfo := destnParts[len(destnParts)-1]
 	imgNameAndVersion := strings.Split(imgInfo, ":")
 	if len(imgNameAndVersion) != 2 {
-		return nil, fmt.Errorf("failed to build kaniko artifact info request: invalid destination format")
+		return nil, fmt.Errorf("failed to build kaniko artifact info request: invalid destination format, %s", destination)
 	}
 	imgName := imgNameAndVersion[0]
 	imgVer := imgNameAndVersion[1]
 
+	if imgName == "" || imgVer == "" {
+		return nil, fmt.Errorf("failed to build kaniko artifact info request: invalid destination format, %s", destination)
+	}
+
 	artInfo := CreateArtifactInfoObj{
-		"name":    imgName,
-		"version": imgVer,
-		"url":     destination,
-		"type":    "docker",
+		"runId":       runId,
+		"run_attempt": runAttempt,
+		"name":        imgName,
+		"version":     imgVer,
+		"url":         destination,
+		"type":        "docker",
 	}
 
 	return artInfo, nil

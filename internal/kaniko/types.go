@@ -1,6 +1,8 @@
 package kaniko
 
-import "context"
+import (
+	"context"
+)
 
 type Config struct {
 	context.Context
@@ -24,6 +26,8 @@ type Config struct {
 	Target string `json:"target,omitempty"`
 	// TarPath is an optional path to save the image as a tar file.
 	TarPath string `json:"tar-path,omitempty"`
+
+	client HTTPClient
 }
 
 type Auth struct {

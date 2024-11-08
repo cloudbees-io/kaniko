@@ -97,3 +97,5 @@ runs:
         CLOUDBEES_REGISTRY_CONFIG: ${{ inputs.registry-configuration }}
         CLOUDBEES_API_URL: ${{ cloudbees.api.url }}
         CLOUDBEES_API_TOKEN: ${{ cloudbees.api.token }}
+        CLOUDBEES_RUN_ID: ${{ cloudbees.run_id }}
+        CLOUDBEES_RUN_ATTEMPT: ${{ cloudbees.run_attempt }}
