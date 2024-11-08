@@ -69,7 +69,7 @@ func (k *Config) createArtifactInfo(destinations []string) error {
 
 		apiToken := os.Getenv("CLOUDBEES_API_TOKEN")
 		if apiToken == "" {
-			return fmt.Errorf("failed to send artifact info because of missed CLOUDBEES_API_TOKEN variable")
+			return fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_API_TOKEN environment variable")
 		}
 
 		requestURL, err := url.JoinPath(apiUrl, "/v2/workflows/runs/artifactinfos")
