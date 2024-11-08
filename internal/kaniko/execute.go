@@ -64,7 +64,7 @@ func (k *Config) createArtifactInfo(destinations []string) error {
 
 		apiUrl := os.Getenv("CLOUDBEES_API_URL")
 		if apiUrl == "" {
-			return fmt.Errorf("failed to send artifact info because of missed CLOUDBEES_API_URL variable")
+			return fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_API_URL environment variable")
 		}
 
 		apiToken := os.Getenv("CLOUDBEES_API_TOKEN")
