@@ -81,23 +81,23 @@ func (k *Config) createArtifactInfo(client HTTPClient, destinations []string) er
 		return fmt.Errorf("destinations is empty")
 	}
 
+	apiUrl := os.Getenv("CLOUDBEES_API_URL")
+	if apiUrl == "" {
+		return fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_API_URL environment variable")
+	}
+
+	apiToken := os.Getenv("CLOUDBEES_API_TOKEN")
+	if apiToken == "" {
+		return fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_API_TOKEN environment variable")
+	}
+
+	requestURL, err := url.JoinPath(apiUrl, "/v2/workflows/runs/artifactinfos")
+	if err != nil {
+		return err
+	}
+
 	for _, destination := range destinations {
-		fmt.Printf("Sending artifact info for destination: %v\n", destination)
-
-		apiUrl := os.Getenv("CLOUDBEES_API_URL")
-		if apiUrl == "" {
-			return fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_API_URL environment variable")
-		}
-
-		apiToken := os.Getenv("CLOUDBEES_API_TOKEN")
-		if apiToken == "" {
-			return fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_API_TOKEN environment variable")
-		}
-
-		requestURL, err := url.JoinPath(apiUrl, "/v2/workflows/runs/artifactinfos")
-		if err != nil {
-			return err
-		}
+		fmt.Printf("Sending info to CloudBees Platform for published artifact: %v\n", destination)
 
 		artifactInfo, err := k.buildCreateArtifactInfoRequest(destination)
 		if err != nil {
