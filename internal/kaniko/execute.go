@@ -83,12 +83,12 @@ func (k *Config) createArtifactInfo(client HTTPClient, destinations []string) er
 
 	apiUrl := os.Getenv("CLOUDBEES_API_URL")
 	if apiUrl == "" {
-		return fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_API_URL environment variable")
+		return fmt.Errorf("failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_URL environment variable")
 	}
 
 	apiToken := os.Getenv("CLOUDBEES_API_TOKEN")
 	if apiToken == "" {
-		return fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_API_TOKEN environment variable")
+		return fmt.Errorf("failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_TOKEN environment variable")
 	}
 
 	requestURL, err := url.JoinPath(apiUrl, "/v2/workflows/runs/artifactinfos")
@@ -96,10 +96,20 @@ func (k *Config) createArtifactInfo(client HTTPClient, destinations []string) er
 		return err
 	}
 
+	runId := os.Getenv("CLOUDBEES_RUN_ID")
+	if runId == "" {
+		return fmt.Errorf("failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_RUN_ID environment variable")
+	}
+
+	runAttempt := os.Getenv("CLOUDBEES_RUN_ATTEMPT")
+	if runAttempt == "" {
+		return fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_RUN_ATTEMPT environment variable")
+	}
+
 	for _, destination := range destinations {
 		fmt.Printf("Sending info to CloudBees Platform for published artifact: %v\n", destination)
 
-		artifactInfo, err := k.buildCreateArtifactInfoRequest(destination)
+		artifactInfo, err := k.buildCreateArtifactInfoRequest(destination, runId, runAttempt)
 		if err != nil {
 			return err
 		}
@@ -136,22 +146,12 @@ func (k *Config) createArtifactInfo(client HTTPClient, destinations []string) er
 }
 
 // CreateArtifactInfoObj is a map of key-value pairs that is used to store CreateArtifactInfoRequest data
-type CreateArtifactInfoObj map[string]interface{}
+type CreateArtifactInfoMap map[string]interface{}
 
-func (k *Config) buildCreateArtifactInfoRequest(destination string) (CreateArtifactInfoObj, error) {
+func (k *Config) buildCreateArtifactInfoRequest(destination, runId, runAttempt string) (CreateArtifactInfoMap, error) {
 
 	if destination == "" {
 		return nil, fmt.Errorf("destination is empty")
-	}
-
-	runId := os.Getenv("CLOUDBEES_RUN_ID")
-	if runId == "" {
-		return nil, fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_RUN_ID environment variable")
-	}
-
-	runAttempt := os.Getenv("CLOUDBEES_RUN_ATTEMPT")
-	if runAttempt == "" {
-		return nil, fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_RUN_ATTEMPT environment variable")
 	}
 
 	destnParts := strings.Split(destination, "/")
@@ -167,7 +167,7 @@ func (k *Config) buildCreateArtifactInfoRequest(destination string) (CreateArtif
 		return nil, fmt.Errorf("failed to build kaniko artifact info request: invalid destination format, %s", destination)
 	}
 
-	artInfo := CreateArtifactInfoObj{
+	artInfo := CreateArtifactInfoMap{
 		"runId":       runId,
 		"run_attempt": runAttempt,
 		"name":        imgName,

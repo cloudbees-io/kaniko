@@ -1,8 +1,6 @@
 package kaniko
 
-import (
-	"context"
-)
+import "context"
 
 type Config struct {
 	context.Context

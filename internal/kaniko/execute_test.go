@@ -420,7 +420,7 @@ func Test_buildCreateArtifactInfoRequest(t *testing.T) {
 		var c = Config{}
 		setOSEnv()
 
-		_, err := c.buildCreateArtifactInfoRequest("")
+		_, err := c.buildCreateArtifactInfoRequest("", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
 		require.EqualError(t, err, "destination is empty")
 	})
 
@@ -429,7 +429,7 @@ func Test_buildCreateArtifactInfoRequest(t *testing.T) {
 		setOSEnv()
 		destination := "gcr.io/kaniko-project/dummy"
 
-		_, err := c.buildCreateArtifactInfoRequest(destination)
+		_, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
 		require.EqualErrorf(t, err, "failed to build kaniko artifact info request: invalid destination format, gcr.io/kaniko-project/dummy", "failed to build kaniko artifact info request: invalid destination format, %s", destination)
 	})
 
@@ -438,7 +438,7 @@ func Test_buildCreateArtifactInfoRequest(t *testing.T) {
 		setOSEnv()
 		destination := "gcr.io/kaniko-project/:v1.0"
 
-		_, err := c.buildCreateArtifactInfoRequest(destination)
+		_, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
 		require.EqualErrorf(t, err, "failed to build kaniko artifact info request: invalid destination format, gcr.io/kaniko-project/:v1.0", "failed to build kaniko artifact info request: invalid destination format, %s", destination)
 	})
 
@@ -447,28 +447,8 @@ func Test_buildCreateArtifactInfoRequest(t *testing.T) {
 		setOSEnv()
 		destination := "gcr.io/kaniko-project/executor:"
 
-		_, err := c.buildCreateArtifactInfoRequest(destination)
+		_, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
 		require.EqualErrorf(t, err, "failed to build kaniko artifact info request: invalid destination format, gcr.io/kaniko-project/executor:", "failed to build kaniko artifact info request: invalid destination format, %s", destination)
-	})
-
-	t.Run("CLOUDBEES_RUN_ID is empty", func(t *testing.T) {
-		var c = Config{}
-		setOSEnv()
-		os.Setenv("CLOUDBEES_RUN_ID", "")
-		destination := "gcr.io/kaniko-project/executor:v1.6.0"
-
-		_, err := c.buildCreateArtifactInfoRequest(destination)
-		require.EqualError(t, err, "failed to send artifact info because of missing CLOUDBEES_RUN_ID environment variable")
-	})
-
-	t.Run("CLOUDBEES_RUN_ATTEMPT is empty", func(t *testing.T) {
-		var c = Config{}
-		setOSEnv()
-		os.Setenv("CLOUDBEES_RUN_ATTEMPT", "")
-		destination := "gcr.io/kaniko-project/executor:v1.6.0"
-
-		_, err := c.buildCreateArtifactInfoRequest(destination)
-		require.EqualError(t, err, "failed to send artifact info because of missing CLOUDBEES_RUN_ATTEMPT environment variable")
 	})
 }
 
@@ -531,7 +511,7 @@ func Test_createArtifactInfo(t *testing.T) {
 		}
 
 		err := c.createArtifactInfo(mockClient, destinations)
-		require.EqualError(t, err, "failed to send artifact info because of missing CLOUDBEES_API_URL environment variable")
+		require.EqualError(t, err, "failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_URL environment variable")
 	})
 
 	t.Run("CLOUDBEES_API_TOKEN is nil", func(t *testing.T) {
@@ -549,7 +529,43 @@ func Test_createArtifactInfo(t *testing.T) {
 		}
 
 		err := c.createArtifactInfo(mockClient, destinations)
-		require.EqualError(t, err, "failed to send artifact info because of missing CLOUDBEES_API_TOKEN environment variable")
+		require.EqualError(t, err, "failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_TOKEN environment variable")
+	})
+
+	t.Run("CLOUDBEES_RUN_ID is empty", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		os.Setenv("CLOUDBEES_RUN_ID", "")
+		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
+
+		// Prepare a mock response
+		mockResponse := &http.Response{}
+
+		mockClient := &MockHTTPClient{
+			Response: mockResponse,
+			Err:      nil,
+		}
+
+		err := c.createArtifactInfo(mockClient, destinations)
+		require.EqualError(t, err, "failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_RUN_ID environment variable")
+	})
+
+	t.Run("CLOUDBEES_RUN_ATTEMPT is empty", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		os.Setenv("CLOUDBEES_RUN_ATTEMPT", "")
+		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
+
+		// Prepare a mock response
+		mockResponse := &http.Response{}
+
+		mockClient := &MockHTTPClient{
+			Response: mockResponse,
+			Err:      nil,
+		}
+
+		err := c.createArtifactInfo(mockClient, destinations)
+		require.EqualError(t, err, "failed to send artifact info because of missing CLOUDBEES_RUN_ATTEMPT environment variable")
 	})
 
 	t.Run("create - Success", func(t *testing.T) {
