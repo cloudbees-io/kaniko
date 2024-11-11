@@ -16,8 +16,6 @@ type Config struct {
 	Destination string `json:"destination,omitempty"`
 	// RegistryMirrors contains registries used to pull images.
 	RegistryMirrors string `json:"registryMirrors,omitempty"`
-	// SendEvent sets whether to save the metadata for the published container images in the CloudBees platform.
-	SendEvent bool `json:"sendEvent,omitempty"`
 	// SkipDefaultRegistryFallback sets whether to use fallback if image isn't found in mirrors.
 	SkipDefaultRegistryFallback bool `json:"skipDefaultRegistryFallback,omitempty"`
 	// Verbosity is the verbosity level of the Kaniko executor.
