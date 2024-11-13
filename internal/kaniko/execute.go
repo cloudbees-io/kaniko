@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/cloudbees-io/registry-config/pkg/registries"
+	"github.com/distribution/reference"
 )
 
 const (
@@ -154,14 +155,28 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, runId, runAttempt s
 		return nil, fmt.Errorf("destination is empty")
 	}
 
-	destnParts := strings.Split(destination, "/")
-	imgInfo := destnParts[len(destnParts)-1]
-	imgNameAndVersion := strings.Split(imgInfo, ":")
-	if len(imgNameAndVersion) != 2 {
-		return nil, fmt.Errorf("failed to build kaniko artifact info request: invalid destination format, %s", destination)
+	ref, err := reference.Parse(destination)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse image reference '%s': %v", destination, err)
 	}
-	imgName := imgNameAndVersion[0]
-	imgVer := imgNameAndVersion[1]
+
+	var imgName, imgVer string
+	// Check if the reference is a tagged or digest reference
+	switch ref := ref.(type) {
+	case reference.Tagged:
+		namedRef := ref.(reference.Named)
+		imgName = namedRef.Name()
+		imgVer = ref.Tag()
+	case reference.Digested:
+		namedRef := ref.(reference.Named)
+		imgName = namedRef.Name()
+		imgVer = string(ref.Digest())
+	case reference.Named:
+		imgName = ref.Name()
+		imgVer = "latest"
+	default:
+		return nil, fmt.Errorf("unsupported destination type: %T for destination: %s\n", ref, destination)
+	}
 
 	if imgName == "" || imgVer == "" {
 		return nil, fmt.Errorf("failed to build kaniko artifact info request: invalid destination format, %s", destination)

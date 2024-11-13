@@ -424,22 +424,13 @@ func Test_buildCreateArtifactInfoRequest(t *testing.T) {
 		require.EqualError(t, err, "destination is empty")
 	})
 
-	t.Run("invalid destination format", func(t *testing.T) {
-		var c = Config{}
-		setOSEnv()
-		destination := "gcr.io/kaniko-project/dummy"
-
-		_, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		require.EqualErrorf(t, err, "failed to build kaniko artifact info request: invalid destination format, gcr.io/kaniko-project/dummy", "failed to build kaniko artifact info request: invalid destination format, %s", destination)
-	})
-
 	t.Run("invalid destination format - no name specified", func(t *testing.T) {
 		var c = Config{}
 		setOSEnv()
 		destination := "gcr.io/kaniko-project/:v1.0"
 
 		_, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		require.EqualErrorf(t, err, "failed to build kaniko artifact info request: invalid destination format, gcr.io/kaniko-project/:v1.0", "failed to build kaniko artifact info request: invalid destination format, %s", destination)
+		require.EqualErrorf(t, err, "failed to parse image reference 'gcr.io/kaniko-project/:v1.0': invalid reference format", "failed to parse image reference '%s': invalid reference format", destination)
 	})
 
 	t.Run("invalid destination format - no version specified", func(t *testing.T) {
@@ -448,8 +439,45 @@ func Test_buildCreateArtifactInfoRequest(t *testing.T) {
 		destination := "gcr.io/kaniko-project/executor:"
 
 		_, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		require.EqualErrorf(t, err, "failed to build kaniko artifact info request: invalid destination format, gcr.io/kaniko-project/executor:", "failed to build kaniko artifact info request: invalid destination format, %s", destination)
+		require.EqualErrorf(t, err, "failed to parse image reference 'gcr.io/kaniko-project/executor:': invalid reference format", "failed to parse image reference '%s': invalid reference format", destination)
 	})
+
+	t.Run("success - named imgRef 1", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		destination := "ubuntu"
+
+		artInfo, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
+		require.Nil(t, err)
+		require.NotNil(t, artInfo)
+		require.Equal(t, "ubuntu", artInfo["name"])
+		require.Equal(t, "latest", artInfo["version"])
+	})
+
+	t.Run("success - tagged imgRef 2", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		destination := "myrepo/myimage:1."
+
+		artInfo, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
+		require.Nil(t, err)
+		require.NotNil(t, artInfo)
+		require.Equal(t, "myrepo/myimage", artInfo["name"])
+		require.Equal(t, "1.", artInfo["version"])
+	})
+
+	t.Run("success - tagged imgRef 3", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		destination := "public.ecr.aws/l7o7z1g8/actions/kaniko-action:a0cb1b7ee330e2f1ecf0e7bb974e167f30c0bce6"
+
+		artInfo, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
+		require.Nil(t, err)
+		require.NotNil(t, artInfo)
+		require.Equal(t, "public.ecr.aws/l7o7z1g8/actions/kaniko-action", artInfo["name"])
+		require.Equal(t, "a0cb1b7ee330e2f1ecf0e7bb974e167f30c0bce6", artInfo["version"])
+	})
+
 }
 
 func setOSEnv() {
