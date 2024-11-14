@@ -48,6 +48,11 @@ inputs:
     default: info
     description: >
       Log level verbosity - panic, fatal, error, warn, info, debug, trace
+  send-artifact-info:
+    default: 'false'
+    description: >
+      If set, artifact info is sent to Cloudbees Platform
+      Type: Boolean
 
 outputs:
   digest:
@@ -89,9 +94,14 @@ runs:
           --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}"
           --verbosity "${{ inputs.verbosity }}"
           --target "${{ inputs.target }}"
+          --send-artifact-info="${{ inputs.send-artifact-info }}"
           ${{ inputs.tar-path && format('--tar-path "{0}"', inputs.tar-path) || '' }}
       env:
         DOCKER_CONFIG: ${{ cloudbees.home }}/.docker
         DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
         DOCKER_LABELS: ${{ inputs.labels }}
         CLOUDBEES_REGISTRY_CONFIG: ${{ inputs.registry-configuration }}
+        CLOUDBEES_API_URL: ${{ cloudbees.api.url }}
+        CLOUDBEES_API_TOKEN: ${{ cloudbees.api.token }}
+        CLOUDBEES_RUN_ID: ${{ cloudbees.run_id }}
+        CLOUDBEES_RUN_ATTEMPT: ${{ cloudbees.run_attempt }}

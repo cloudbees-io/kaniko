@@ -1,22 +1,38 @@
 package kaniko
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/cloudbees-io/registry-config/pkg/registries"
+	"github.com/distribution/reference"
 )
 
 const (
 	kanikoExecutorBinary = "executor"
-	registryConfigBinary = "registry-config"
 )
+
+// HTTPClient defines the methods that we need for our HTTP client.
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+type HttpClient struct {
+	client *http.Client
+}
+
+func (r *HttpClient) Do(req *http.Request) (*http.Response, error) {
+	return r.client.Do(req)
+}
 
 func (k *Config) Run(ctx context.Context) (err error) {
 	k.Context = ctx
@@ -47,7 +63,137 @@ func (k *Config) Run(ctx context.Context) (err error) {
 			return err
 		}
 	}
+
+	if k.SendArtifactInfo {
+		err = k.createArtifactInfo(k.client, k.processDestinations())
+		if err != nil {
+			log.Printf("WARN: failed to create artifact info: %v", err)
+		}
+	}
 	return nil
+}
+
+func (k *Config) createArtifactInfo(client HTTPClient, destinations []string) error {
+
+	if client == nil {
+		return fmt.Errorf("client is nil")
+	}
+
+	if destinations == nil || len(destinations) == 0 {
+		return fmt.Errorf("destinations is empty")
+	}
+
+	apiUrl := os.Getenv("CLOUDBEES_API_URL")
+	if apiUrl == "" {
+		return fmt.Errorf("failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_URL environment variable")
+	}
+
+	apiToken := os.Getenv("CLOUDBEES_API_TOKEN")
+	if apiToken == "" {
+		return fmt.Errorf("failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_TOKEN environment variable")
+	}
+
+	requestURL, err := url.JoinPath(apiUrl, "/v2/workflows/runs/artifactinfos")
+	if err != nil {
+		return err
+	}
+
+	runId := os.Getenv("CLOUDBEES_RUN_ID")
+	if runId == "" {
+		return fmt.Errorf("failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_RUN_ID environment variable")
+	}
+
+	runAttempt := os.Getenv("CLOUDBEES_RUN_ATTEMPT")
+	if runAttempt == "" {
+		return fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_RUN_ATTEMPT environment variable")
+	}
+
+	for _, destination := range destinations {
+		destination = strings.TrimSpace(destination)
+		fmt.Printf("Sending info to CloudBees Platform for published artifact: %v\n", destination)
+
+		artifactInfo, err := k.buildCreateArtifactInfoRequest(destination, runId, runAttempt)
+		if err != nil {
+			return err
+		}
+
+		artifactInfoBytes, err := json.Marshal(artifactInfo)
+		if err != nil {
+			return err
+		}
+
+		apiReq, err := http.NewRequest(
+			"POST",
+			requestURL,
+			bytes.NewReader(artifactInfoBytes),
+		)
+		if err != nil {
+			return err
+		}
+
+		apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiToken))
+		apiReq.Header.Set("Content-Type", "application/json")
+		apiReq.Header.Set("Accept", "application/json")
+
+		resp, err := client.Do(apiReq)
+		if err != nil {
+			return err
+		}
+		defer func() { _ = resp.Body.Close() }()
+
+		if resp.StatusCode != 200 {
+			return fmt.Errorf("failed to create artifact info: \nPOST %s\nHTTP/%d %s\n", requestURL, resp.StatusCode, resp.Status)
+		}
+	}
+	return nil
+}
+
+// CreateArtifactInfoObj is a map of key-value pairs that is used to store CreateArtifactInfoRequest data
+type CreateArtifactInfoMap map[string]interface{}
+
+func (k *Config) buildCreateArtifactInfoRequest(destination, runId, runAttempt string) (CreateArtifactInfoMap, error) {
+
+	if destination == "" {
+		return nil, fmt.Errorf("destination is empty")
+	}
+
+	ref, err := reference.Parse(destination)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse image reference '%s': %w", destination, err)
+	}
+
+	var imgName, imgVer string
+	// Check if the reference is a tagged or digest reference
+	switch ref := ref.(type) {
+	case reference.Tagged:
+		namedRef := ref.(reference.Named)
+		imgName = namedRef.Name()
+		imgVer = ref.Tag()
+	case reference.Digested:
+		namedRef := ref.(reference.Named)
+		imgName = namedRef.Name()
+		imgVer = ref.Digest().String()
+	case reference.Named:
+		imgName = ref.Name()
+		imgVer = "latest"
+	default:
+		return nil, fmt.Errorf("unsupported destination type: %T for destination: %s\n", ref, destination)
+	}
+
+	if imgName == "" || imgVer == "" {
+		return nil, fmt.Errorf("failed to build kaniko artifact info request: invalid destination format, %s", destination)
+	}
+
+	artInfo := CreateArtifactInfoMap{
+		"runId":       runId,
+		"run_attempt": runAttempt,
+		"name":        imgName,
+		"version":     imgVer,
+		"url":         destination,
+		"type":        "docker",
+	}
+
+	return artInfo, nil
 }
 
 func (k *Config) writeActionOutputs(outDir, digestFile string) error {

@@ -2,6 +2,8 @@ package kaniko
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -411,4 +413,242 @@ func Test_writeActionOutput(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_buildCreateArtifactInfoRequest(t *testing.T) {
+	t.Run("destination is empty", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+
+		_, err := c.buildCreateArtifactInfoRequest("", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
+		require.EqualError(t, err, "destination is empty")
+	})
+
+	t.Run("invalid destination format - no name specified", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		destination := "gcr.io/kaniko-project/:v1.0"
+
+		_, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
+		require.EqualErrorf(t, err, "failed to parse image reference 'gcr.io/kaniko-project/:v1.0': invalid reference format", "failed to parse image reference '%s': invalid reference format", destination)
+	})
+
+	t.Run("invalid destination format - no version specified", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		destination := "gcr.io/kaniko-project/executor:"
+
+		_, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
+		require.EqualErrorf(t, err, "failed to parse image reference 'gcr.io/kaniko-project/executor:': invalid reference format", "failed to parse image reference '%s': invalid reference format", destination)
+	})
+
+	t.Run("success - named imgRef 1", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		destination := "ubuntu"
+
+		artInfo, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
+		require.Nil(t, err)
+		require.NotNil(t, artInfo)
+		require.Equal(t, "ubuntu", artInfo["name"])
+		require.Equal(t, "latest", artInfo["version"])
+	})
+
+	t.Run("success - tagged imgRef 2", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		destination := "myrepo/myimage:1."
+
+		artInfo, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
+		require.Nil(t, err)
+		require.NotNil(t, artInfo)
+		require.Equal(t, "myrepo/myimage", artInfo["name"])
+		require.Equal(t, "1.", artInfo["version"])
+	})
+
+	t.Run("success - tagged imgRef 3", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		destination := "public.ecr.aws/l7o7z1g8/actions/kaniko-action:a0cb1b7ee330e2f1ecf0e7bb974e167f30c0bce6"
+
+		artInfo, err := c.buildCreateArtifactInfoRequest(destination, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
+		require.Nil(t, err)
+		require.NotNil(t, artInfo)
+		require.Equal(t, "public.ecr.aws/l7o7z1g8/actions/kaniko-action", artInfo["name"])
+		require.Equal(t, "a0cb1b7ee330e2f1ecf0e7bb974e167f30c0bce6", artInfo["version"])
+	})
+
+}
+
+func setOSEnv() {
+	os.Setenv("CLOUDBEES_API_URL", "https://cloudbees.io")
+	os.Setenv("CLOUDBEES_API_TOKEN", "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUI")
+	os.Setenv("CLOUDBEES_RUN_ID", "123e4567-e89b-12d3-a456-426614174000")
+	os.Setenv("CLOUDBEES_RUN_ATTEMPT", "1")
+}
+
+type MockHTTPClient struct {
+	Response *http.Response
+	Err      error
+}
+
+func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
+	return m.Response, m.Err
+}
+
+func Test_createArtifactInfo(t *testing.T) {
+	t.Run("client is nil", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
+
+		err := c.createArtifactInfo(nil, destinations)
+		require.EqualError(t, err, "client is nil")
+	})
+
+	t.Run("destinations list empty", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		destinations := []string{}
+
+		// Prepare a mock response
+		mockResponse := &http.Response{}
+
+		mockClient := &MockHTTPClient{
+			Response: mockResponse,
+			Err:      nil,
+		}
+
+		err := c.createArtifactInfo(mockClient, destinations)
+		require.EqualError(t, err, "destinations is empty")
+	})
+
+	t.Run("CLOUDBEES_API_URL is empty", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		os.Setenv("CLOUDBEES_API_URL", "")
+
+		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
+
+		// Prepare a mock response
+		mockResponse := &http.Response{}
+
+		mockClient := &MockHTTPClient{
+			Response: mockResponse,
+			Err:      nil,
+		}
+
+		err := c.createArtifactInfo(mockClient, destinations)
+		require.EqualError(t, err, "failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_URL environment variable")
+	})
+
+	t.Run("CLOUDBEES_API_TOKEN is nil", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		os.Setenv("CLOUDBEES_API_TOKEN", "")
+		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
+
+		// Prepare a mock response
+		mockResponse := &http.Response{}
+
+		mockClient := &MockHTTPClient{
+			Response: mockResponse,
+			Err:      nil,
+		}
+
+		err := c.createArtifactInfo(mockClient, destinations)
+		require.EqualError(t, err, "failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_TOKEN environment variable")
+	})
+
+	t.Run("CLOUDBEES_RUN_ID is empty", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		os.Setenv("CLOUDBEES_RUN_ID", "")
+		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
+
+		// Prepare a mock response
+		mockResponse := &http.Response{}
+
+		mockClient := &MockHTTPClient{
+			Response: mockResponse,
+			Err:      nil,
+		}
+
+		err := c.createArtifactInfo(mockClient, destinations)
+		require.EqualError(t, err, "failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_RUN_ID environment variable")
+	})
+
+	t.Run("CLOUDBEES_RUN_ATTEMPT is empty", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		os.Setenv("CLOUDBEES_RUN_ATTEMPT", "")
+		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
+
+		// Prepare a mock response
+		mockResponse := &http.Response{}
+
+		mockClient := &MockHTTPClient{
+			Response: mockResponse,
+			Err:      nil,
+		}
+
+		err := c.createArtifactInfo(mockClient, destinations)
+		require.EqualError(t, err, "failed to send artifact info because of missing CLOUDBEES_RUN_ATTEMPT environment variable")
+	})
+
+	t.Run("create - Success", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", "gcr.io/kaniko-project/executor:v1.6.1"}
+
+		// Prepare a mock response
+		mockResponse := &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       http.NoBody,
+		}
+
+		mockClient := &MockHTTPClient{
+			Response: mockResponse,
+			Err:      nil,
+		}
+
+		err := c.createArtifactInfo(mockClient, destinations)
+		require.NoError(t, err)
+	})
+
+	t.Run("create - Error", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
+
+		mockClient := &MockHTTPClient{
+			Response: nil,
+			Err:      fmt.Errorf("network error"),
+		}
+
+		err := c.createArtifactInfo(mockClient, destinations)
+		require.EqualError(t, err, "network error")
+	})
+
+	t.Run("create - statusCode not 200", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
+
+		// Prepare a mock response
+		mockResponse := &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       http.NoBody,
+		}
+
+		mockClient := &MockHTTPClient{
+			Response: mockResponse,
+			Err:      nil,
+		}
+
+		err := c.createArtifactInfo(mockClient, destinations)
+		require.EqualErrorf(t, err, "failed to create artifact info: \nPOST https://cloudbees.io/v2/workflows/runs/artifactinfos\nHTTP/400 \n",
+			"failed to create artifact info: \nPOST %s\nHTTP/%d %s\n",
+			"https://cloudbees.io/v2/workflows/runs/artifactinfos", 400, "Bad Request")
+	})
 }
