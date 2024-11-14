@@ -64,11 +64,12 @@ func (k *Config) Run(ctx context.Context) (err error) {
 		}
 	}
 
-	err = k.createArtifactInfo(k.client, k.processDestinations())
-	if err != nil {
-		return err
+	if k.SendArtifactInfo {
+		err = k.createArtifactInfo(k.client, k.processDestinations())
+		if err != nil {
+			log.Printf("WARN: failed to create artifact info: %v", err)
+		}
 	}
-
 	return nil
 }
 
@@ -108,6 +109,7 @@ func (k *Config) createArtifactInfo(client HTTPClient, destinations []string) er
 	}
 
 	for _, destination := range destinations {
+		destination = strings.TrimSpace(destination)
 		fmt.Printf("Sending info to CloudBees Platform for published artifact: %v\n", destination)
 
 		artifactInfo, err := k.buildCreateArtifactInfoRequest(destination, runId, runAttempt)

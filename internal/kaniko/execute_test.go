@@ -599,7 +599,7 @@ func Test_createArtifactInfo(t *testing.T) {
 	t.Run("create - Success", func(t *testing.T) {
 		var c = Config{}
 		setOSEnv()
-		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
+		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", "gcr.io/kaniko-project/executor:v1.6.1"}
 
 		// Prepare a mock response
 		mockResponse := &http.Response{
