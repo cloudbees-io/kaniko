@@ -379,6 +379,10 @@ func (k *Config) cmdBuilder(digestFile string) (*exec.Cmd, error) {
 		cmdArgs = append(cmdArgs, "--tar-path", k.TarPath)
 	}
 
+	if k.SendArtifactInfo {
+		cmdArgs = append(cmdArgs, "--send-artifact-info")
+	}
+
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)
 	kanikoCmd.Env = k.env()
 

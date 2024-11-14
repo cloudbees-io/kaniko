@@ -50,5 +50,5 @@ func init() {
 	cmd.Flags().StringVar(&cfg.Verbosity, "verbosity", "debug", "Verbosity level of the Kaniko executor")
 	cmd.Flags().StringVar(&cfg.Target, "target", "", "Target stage to build in a multi-stage Dockerfile")
 	cmd.Flags().StringVar(&cfg.TarPath, "tar-path", "", "Path to save the image tar file (optional). If set, the image will be saved as a tar file.")
-	cmd.Flags().BoolVar(&cfg.SendArtifactInfo, "send - artifact - info", false, "If set, artifact info is sent to Cloudbees Platform. Default set to 'false'")
+	cmd.Flags().BoolVar(&cfg.SendArtifactInfo, "send-artifact-info", false, "If set, artifact info is sent to Cloudbees Platform. Default set to 'false'")
 }
