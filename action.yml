@@ -49,7 +49,7 @@ inputs:
     description: >
       Log level verbosity - panic, fatal, error, warn, info, debug, trace
   send-artifact-info:
-    default: 'true'
+    default: 'false'
     description: >
       If set, artifact info is sent to Cloudbees Platform
       Type: Boolean

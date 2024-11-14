@@ -99,7 +99,7 @@ NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
 | `send-artifact-info`
 | String
 | No
-| If set, artifact info is sent to Cloudbees Platform. Accepts 'true' or 'false', default is 'true'.
+| If set, artifact info is sent to Cloudbees Platform. Accepts 'true' or 'false', default is 'false'.
 
 |===
 
