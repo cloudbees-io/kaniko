@@ -67,7 +67,7 @@ func (k *Config) Run(ctx context.Context) (err error) {
 	if k.SendArtifactInfo {
 		err = k.createArtifactInfo(k.client, k.processDestinations())
 		if err != nil {
-			log.Printf("WARN: failed to create artifact info: %w", err)
+			log.Printf("WARN: failed to create artifact info: %v", err)
 		}
 	}
 	return nil
