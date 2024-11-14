@@ -67,7 +67,7 @@ func (k *Config) Run(ctx context.Context) (err error) {
 	if k.SendArtifactInfo {
 		err = k.createArtifactInfo(k.client, k.processDestinations())
 		if err != nil {
-			log.Printf("WARN: failed to create artifact info: %v", err)
+			log.Printf("WARN: failed to create artifact info: %w", err)
 		}
 	}
 	return nil
@@ -159,7 +159,7 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, runId, runAttempt s
 
 	ref, err := reference.Parse(destination)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse image reference '%s': %v", destination, err)
+		return nil, fmt.Errorf("failed to parse image reference '%s': %w", destination, err)
 	}
 
 	var imgName, imgVer string
@@ -172,7 +172,7 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, runId, runAttempt s
 	case reference.Digested:
 		namedRef := ref.(reference.Named)
 		imgName = namedRef.Name()
-		imgVer = string(ref.Digest())
+		imgVer = ref.Digest().String()
 	case reference.Named:
 		imgName = ref.Name()
 		imgVer = "latest"
