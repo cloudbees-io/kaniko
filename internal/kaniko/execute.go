@@ -70,6 +70,8 @@ func (k *Config) Run(ctx context.Context) (err error) {
 		if err != nil {
 			log.Printf("WARN: failed to create artifact info: %v", err)
 		}
+		log.Printf("Artifact info sent successfully")
+		fmt.Print("Artifact info sent successfully")
 	}
 	return nil
 }
