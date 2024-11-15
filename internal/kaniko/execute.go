@@ -39,7 +39,7 @@ func (k *Config) Run(ctx context.Context) (err error) {
 	k.client = &HttpClient{
 		client: &http.Client{},
 	}
-
+	fmt.Printf("client created: %s", k.client)
 	k.lookupBinary()
 
 	outDir := os.Getenv("CLOUDBEES_OUTPUTS")
