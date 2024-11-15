@@ -36,7 +36,9 @@ func (r *HttpClient) Do(req *http.Request) (*http.Response, error) {
 
 func (k *Config) Run(ctx context.Context) (err error) {
 	k.Context = ctx
-	k.client = &HttpClient{}
+	k.client = &HttpClient{
+		client: &http.Client{},
+	}
 
 	k.lookupBinary()
 
