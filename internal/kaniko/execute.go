@@ -36,6 +36,7 @@ func (r *HttpClient) Do(req *http.Request) (*http.Response, error) {
 
 func (k *Config) Run(ctx context.Context) (err error) {
 	k.Context = ctx
+	k.client = &HttpClient{}
 
 	k.lookupBinary()
 
@@ -65,7 +66,7 @@ func (k *Config) Run(ctx context.Context) (err error) {
 	}
 
 	if k.SendArtifactInfo {
-		err = k.createArtifactInfo(k.client, k.processDestinations())
+		err = k.createArtifactInfo(k.processDestinations())
 		if err != nil {
 			log.Printf("WARN: failed to create artifact info: %v", err)
 		}
@@ -73,9 +74,9 @@ func (k *Config) Run(ctx context.Context) (err error) {
 	return nil
 }
 
-func (k *Config) createArtifactInfo(client HTTPClient, destinations []string) error {
+func (k *Config) createArtifactInfo(destinations []string) error {
 
-	if client == nil {
+	if k.client == nil {
 		return fmt.Errorf("client is nil")
 	}
 
@@ -135,7 +136,7 @@ func (k *Config) createArtifactInfo(client HTTPClient, destinations []string) er
 		apiReq.Header.Set("Content-Type", "application/json")
 		apiReq.Header.Set("Accept", "application/json")
 
-		resp, err := client.Do(apiReq)
+		resp, err := k.client.Do(apiReq)
 		if err != nil {
 			return err
 		}

@@ -502,12 +502,11 @@ func Test_createArtifactInfo(t *testing.T) {
 		setOSEnv()
 		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
 
-		err := c.createArtifactInfo(nil, destinations)
+		err := c.createArtifactInfo(destinations)
 		require.EqualError(t, err, "client is nil")
 	})
 
 	t.Run("destinations list empty", func(t *testing.T) {
-		var c = Config{}
 		setOSEnv()
 		destinations := []string{}
 
@@ -519,12 +518,15 @@ func Test_createArtifactInfo(t *testing.T) {
 			Err:      nil,
 		}
 
-		err := c.createArtifactInfo(mockClient, destinations)
+		var c = Config{
+			client: mockClient,
+		}
+
+		err := c.createArtifactInfo(destinations)
 		require.EqualError(t, err, "destinations is empty")
 	})
 
 	t.Run("CLOUDBEES_API_URL is empty", func(t *testing.T) {
-		var c = Config{}
 		setOSEnv()
 		os.Setenv("CLOUDBEES_API_URL", "")
 
@@ -538,12 +540,15 @@ func Test_createArtifactInfo(t *testing.T) {
 			Err:      nil,
 		}
 
-		err := c.createArtifactInfo(mockClient, destinations)
+		var c = Config{
+			client: mockClient,
+		}
+
+		err := c.createArtifactInfo(destinations)
 		require.EqualError(t, err, "failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_URL environment variable")
 	})
 
 	t.Run("CLOUDBEES_API_TOKEN is nil", func(t *testing.T) {
-		var c = Config{}
 		setOSEnv()
 		os.Setenv("CLOUDBEES_API_TOKEN", "")
 		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
@@ -556,12 +561,15 @@ func Test_createArtifactInfo(t *testing.T) {
 			Err:      nil,
 		}
 
-		err := c.createArtifactInfo(mockClient, destinations)
+		var c = Config{
+			client: mockClient,
+		}
+
+		err := c.createArtifactInfo(destinations)
 		require.EqualError(t, err, "failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_TOKEN environment variable")
 	})
 
 	t.Run("CLOUDBEES_RUN_ID is empty", func(t *testing.T) {
-		var c = Config{}
 		setOSEnv()
 		os.Setenv("CLOUDBEES_RUN_ID", "")
 		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
@@ -574,12 +582,15 @@ func Test_createArtifactInfo(t *testing.T) {
 			Err:      nil,
 		}
 
-		err := c.createArtifactInfo(mockClient, destinations)
+		var c = Config{
+			client: mockClient,
+		}
+
+		err := c.createArtifactInfo(destinations)
 		require.EqualError(t, err, "failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_RUN_ID environment variable")
 	})
 
 	t.Run("CLOUDBEES_RUN_ATTEMPT is empty", func(t *testing.T) {
-		var c = Config{}
 		setOSEnv()
 		os.Setenv("CLOUDBEES_RUN_ATTEMPT", "")
 		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
@@ -592,12 +603,15 @@ func Test_createArtifactInfo(t *testing.T) {
 			Err:      nil,
 		}
 
-		err := c.createArtifactInfo(mockClient, destinations)
+		var c = Config{
+			client: mockClient,
+		}
+
+		err := c.createArtifactInfo(destinations)
 		require.EqualError(t, err, "failed to send artifact info because of missing CLOUDBEES_RUN_ATTEMPT environment variable")
 	})
 
 	t.Run("create - Success", func(t *testing.T) {
-		var c = Config{}
 		setOSEnv()
 		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", "gcr.io/kaniko-project/executor:v1.6.1"}
 
@@ -612,12 +626,15 @@ func Test_createArtifactInfo(t *testing.T) {
 			Err:      nil,
 		}
 
-		err := c.createArtifactInfo(mockClient, destinations)
+		var c = Config{
+			client: mockClient,
+		}
+
+		err := c.createArtifactInfo(destinations)
 		require.NoError(t, err)
 	})
 
 	t.Run("create - Error", func(t *testing.T) {
-		var c = Config{}
 		setOSEnv()
 		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
 
@@ -626,12 +643,15 @@ func Test_createArtifactInfo(t *testing.T) {
 			Err:      fmt.Errorf("network error"),
 		}
 
-		err := c.createArtifactInfo(mockClient, destinations)
+		var c = Config{
+			client: mockClient,
+		}
+
+		err := c.createArtifactInfo(destinations)
 		require.EqualError(t, err, "network error")
 	})
 
 	t.Run("create - statusCode not 200", func(t *testing.T) {
-		var c = Config{}
 		setOSEnv()
 		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
 
@@ -646,7 +666,11 @@ func Test_createArtifactInfo(t *testing.T) {
 			Err:      nil,
 		}
 
-		err := c.createArtifactInfo(mockClient, destinations)
+		var c = Config{
+			client: mockClient,
+		}
+
+		err := c.createArtifactInfo(destinations)
 		require.EqualErrorf(t, err, "failed to create artifact info: \nPOST https://cloudbees.io/v2/workflows/runs/artifactinfos\nHTTP/400 \n",
 			"failed to create artifact info: \nPOST %s\nHTTP/%d %s\n",
 			"https://cloudbees.io/v2/workflows/runs/artifactinfos", 400, "Bad Request")
