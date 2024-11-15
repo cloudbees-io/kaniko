@@ -36,8 +36,9 @@ func (r *HttpClient) Do(req *http.Request) (*http.Response, error) {
 
 func (k *Config) Run(ctx context.Context) (err error) {
 	k.Context = ctx
-	k.client = &HttpClient{}
-
+	k.client = &HttpClient{
+		client: &http.Client{},
+	}
 	k.lookupBinary()
 
 	outDir := os.Getenv("CLOUDBEES_OUTPUTS")
@@ -69,6 +70,8 @@ func (k *Config) Run(ctx context.Context) (err error) {
 		err = k.createArtifactInfo(k.processDestinations())
 		if err != nil {
 			log.Printf("WARN: failed to create artifact info: %v", err)
+		} else {
+			fmt.Print("Artifact info sent successfully.")
 		}
 	}
 	return nil
@@ -149,7 +152,7 @@ func (k *Config) createArtifactInfo(destinations []string) error {
 	return nil
 }
 
-// CreateArtifactInfoObj is a map of key-value pairs that is used to store CreateArtifactInfoRequest data
+// CreateArtifactInfoMap is a map of key-value pairs that is used to store CreateArtifactInfoRequest data
 type CreateArtifactInfoMap map[string]interface{}
 
 func (k *Config) buildCreateArtifactInfoRequest(destination, runId, runAttempt string) (CreateArtifactInfoMap, error) {
@@ -194,6 +197,7 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, runId, runAttempt s
 		"type":        "docker",
 	}
 
+	fmt.Printf("Artifact info data: %v", artInfo)
 	return artInfo, nil
 }
 
