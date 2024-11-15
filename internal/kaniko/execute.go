@@ -39,7 +39,6 @@ func (k *Config) Run(ctx context.Context) (err error) {
 	k.client = &HttpClient{
 		client: &http.Client{},
 	}
-	fmt.Printf("client created: %s", k.client)
 	k.lookupBinary()
 
 	outDir := os.Getenv("CLOUDBEES_OUTPUTS")
@@ -71,9 +70,9 @@ func (k *Config) Run(ctx context.Context) (err error) {
 		err = k.createArtifactInfo(k.processDestinations())
 		if err != nil {
 			log.Printf("WARN: failed to create artifact info: %v", err)
+		} else {
+			fmt.Print("Artifact info sent successfully.")
 		}
-		log.Printf("Artifact info sent successfully")
-		fmt.Print("Artifact info sent successfully")
 	}
 	return nil
 }
