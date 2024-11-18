@@ -96,11 +96,6 @@ NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
 | No
 | The verbosity of logging when running the Kaniko build. It can be one of: `panic`, `fatal`, `error`, `warn`, `info`, `debug`, `trace`. Default is `info`.
 
-| `send-artifact-info`
-| String
-| No
-| If set, artifact info is sent to Cloudbees Platform. Accepts 'true' or 'false', default is 'false'.
-
 |===
 
 == Usage example
