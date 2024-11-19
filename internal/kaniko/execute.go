@@ -150,6 +150,7 @@ func (k *Config) createArtifactInfo(destinations []string) error {
 		if resp.StatusCode != 200 {
 			return fmt.Errorf("failed to create artifact info: \nPOST %s\nHTTP/%d %s\n", requestURL, resp.StatusCode, resp.Status)
 		} else {
+
 			fmt.Printf("artifact info created for destination, %s\n", destination)
 		}
 	}
