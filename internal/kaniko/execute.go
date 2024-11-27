@@ -66,13 +66,13 @@ func (k *Config) Run(ctx context.Context) (err error) {
 		}
 	}
 
-	fmt.Printf("Sending artifact information for the pushed images to CloudBees Platform")
+	fmt.Printf("Sending artifact information for the images to CloudBees Platform\n")
 	destinations := k.processDestinations()
 	err = k.createArtifactInfo(destinations)
 	if err != nil {
 		log.Printf("WARN: failed to send artifact information: %v", err)
 	} else {
-		fmt.Printf("Sent artifact information for %d images", len(destinations))
+		fmt.Printf("Sent artifact information for %d images\n", len(destinations))
 	}
 	return nil
 }
