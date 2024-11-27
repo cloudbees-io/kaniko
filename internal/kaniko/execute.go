@@ -66,15 +66,13 @@ func (k *Config) Run(ctx context.Context) (err error) {
 		}
 	}
 
-	fmt.Printf("Artifact info is sent to Cloudbees Platform: %t", k.SendArtifactInfo)
-	if k.SendArtifactInfo {
-		destinations := k.processDestinations()
-		err = k.createArtifactInfo(destinations)
-		if err != nil {
-			log.Printf("WARN: failed to create artifact info: %v", err)
-		} else {
-			fmt.Printf("Artifact info sent successfully for following destinations, %+q.", destinations)
-		}
+	fmt.Printf("Sending artifact information for the pushed images to CloudBees Platform")
+	destinations := k.processDestinations()
+	err = k.createArtifactInfo(destinations)
+	if err != nil {
+		log.Printf("WARN: failed to send artifact information: %v", err)
+	} else {
+		fmt.Printf("Sent artifact information for %d images", len(destinations))
 	}
 	return nil
 }
@@ -91,12 +89,12 @@ func (k *Config) createArtifactInfo(destinations []string) error {
 
 	apiUrl := os.Getenv("CLOUDBEES_API_URL")
 	if apiUrl == "" {
-		return fmt.Errorf("failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_URL environment variable")
+		return fmt.Errorf("missing CLOUDBEES_API_URL environment variable")
 	}
 
 	apiToken := os.Getenv("CLOUDBEES_API_TOKEN")
 	if apiToken == "" {
-		return fmt.Errorf("failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_TOKEN environment variable")
+		return fmt.Errorf("missing CLOUDBEES_API_TOKEN environment variable")
 	}
 
 	requestURL, err := url.JoinPath(apiUrl, "/v2/workflows/runs/artifactinfos")
@@ -106,17 +104,17 @@ func (k *Config) createArtifactInfo(destinations []string) error {
 
 	runId := os.Getenv("CLOUDBEES_RUN_ID")
 	if runId == "" {
-		return fmt.Errorf("failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_RUN_ID environment variable")
+		return fmt.Errorf("missing CLOUDBEES_RUN_ID environment variable")
 	}
 
 	runAttempt := os.Getenv("CLOUDBEES_RUN_ATTEMPT")
 	if runAttempt == "" {
-		return fmt.Errorf("failed to send artifact info because of missing CLOUDBEES_RUN_ATTEMPT environment variable")
+		return fmt.Errorf("missing CLOUDBEES_RUN_ATTEMPT environment variable")
 	}
 
 	for _, destination := range destinations {
 		destination = strings.TrimSpace(destination)
-		fmt.Printf("Sending info to CloudBees Platform for published artifact: %v\n", destination)
+		fmt.Printf("Sending artifact information for image: %v\n", destination)
 
 		artifactInfo, err := k.buildCreateArtifactInfoRequest(destination, runId, runAttempt)
 		if err != nil {
@@ -148,10 +146,7 @@ func (k *Config) createArtifactInfo(destinations []string) error {
 		defer func() { _ = resp.Body.Close() }()
 
 		if resp.StatusCode != 200 {
-			return fmt.Errorf("failed to create artifact info: \nPOST %s\nHTTP/%d %s\n", requestURL, resp.StatusCode, resp.Status)
-		} else {
-
-			fmt.Printf("artifact info created for destination, %s\n", destination)
+			return fmt.Errorf("request failed: \nPOST %s\nHTTP/%d %s\n", requestURL, resp.StatusCode, resp.Status)
 		}
 	}
 	return nil
