@@ -66,13 +66,11 @@ func (k *Config) Run(ctx context.Context) (err error) {
 		}
 	}
 
-	fmt.Printf("Sending artifact information for the images to CloudBees Platform\n")
+	fmt.Printf("Saving artifact information for the pushed images\n")
 	destinations := k.processDestinations()
 	err = k.createArtifactInfo(destinations)
 	if err != nil {
-		log.Printf("WARN: failed to send artifact information: %v", err)
-	} else {
-		fmt.Printf("Sent artifact information for %d images\n", len(destinations))
+		log.Printf("WARN: failed to save artifact information: %v", err)
 	}
 	return nil
 }
@@ -114,7 +112,7 @@ func (k *Config) createArtifactInfo(destinations []string) error {
 
 	for _, destination := range destinations {
 		destination = strings.TrimSpace(destination)
-		fmt.Printf("Sending artifact information for image: %v\n", destination)
+		fmt.Printf("Saving artifact information for image %v\n", destination)
 
 		artifactInfo, err := k.buildCreateArtifactInfoRequest(destination, runId, runAttempt)
 		if err != nil {
@@ -147,6 +145,8 @@ func (k *Config) createArtifactInfo(destinations []string) error {
 
 		if resp.StatusCode != 200 {
 			return fmt.Errorf("request failed: \nPOST %s\nHTTP/%d %s\n", requestURL, resp.StatusCode, resp.Status)
+		} else {
+			fmt.Printf("Saved artifact information for image %v\n", destination)
 		}
 	}
 	return nil
