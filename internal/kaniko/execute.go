@@ -66,7 +66,7 @@ func (k *Config) Run(ctx context.Context) (err error) {
 		}
 	}
 
-	fmt.Printf("Saving artifact information for the pushed images\n")
+	fmt.Printf("Saving artifact information for the pushed images...\n")
 	destinations := k.processDestinations()
 	err = k.createArtifactInfo(destinations)
 	if err != nil {
