@@ -545,7 +545,7 @@ func Test_createArtifactInfo(t *testing.T) {
 		}
 
 		err := c.createArtifactInfo(destinations)
-		require.EqualError(t, err, "failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_URL environment variable")
+		require.EqualError(t, err, "missing CLOUDBEES_API_URL environment variable")
 	})
 
 	t.Run("CLOUDBEES_API_TOKEN is nil", func(t *testing.T) {
@@ -566,7 +566,7 @@ func Test_createArtifactInfo(t *testing.T) {
 		}
 
 		err := c.createArtifactInfo(destinations)
-		require.EqualError(t, err, "failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_API_TOKEN environment variable")
+		require.EqualError(t, err, "missing CLOUDBEES_API_TOKEN environment variable")
 	})
 
 	t.Run("CLOUDBEES_RUN_ID is empty", func(t *testing.T) {
@@ -587,7 +587,7 @@ func Test_createArtifactInfo(t *testing.T) {
 		}
 
 		err := c.createArtifactInfo(destinations)
-		require.EqualError(t, err, "failed to send artifact info to CloudBees Platform because of missing CLOUDBEES_RUN_ID environment variable")
+		require.EqualError(t, err, "missing CLOUDBEES_RUN_ID environment variable")
 	})
 
 	t.Run("CLOUDBEES_RUN_ATTEMPT is empty", func(t *testing.T) {
@@ -608,7 +608,7 @@ func Test_createArtifactInfo(t *testing.T) {
 		}
 
 		err := c.createArtifactInfo(destinations)
-		require.EqualError(t, err, "failed to send artifact info because of missing CLOUDBEES_RUN_ATTEMPT environment variable")
+		require.EqualError(t, err, "missing CLOUDBEES_RUN_ATTEMPT environment variable")
 	})
 
 	t.Run("create - Success", func(t *testing.T) {
@@ -671,7 +671,7 @@ func Test_createArtifactInfo(t *testing.T) {
 		}
 
 		err := c.createArtifactInfo(destinations)
-		require.EqualErrorf(t, err, "failed to create artifact info: \nPOST https://cloudbees.io/v2/workflows/runs/artifactinfos\nHTTP/400 \n",
+		require.EqualErrorf(t, err, "request failed: \nPOST https://cloudbees.io/v2/workflows/runs/artifactinfos\nHTTP/400 \n",
 			"failed to create artifact info: \nPOST %s\nHTTP/%d %s\n",
 			"https://cloudbees.io/v2/workflows/runs/artifactinfos", 400, "Bad Request")
 	})

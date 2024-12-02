@@ -22,8 +22,6 @@ type Config struct {
 	Target string `json:"target,omitempty"`
 	// TarPath is an optional path to save the image as a tar file.
 	TarPath string `json:"tar-path,omitempty"`
-	// SendArtifactInfo sets whether the published docker image artifact info should be sent to Cloudbees Platform
-	SendArtifactInfo bool `json:"sendArtifactInfo,omitempty"`
 
 	client HTTPClient
 }
