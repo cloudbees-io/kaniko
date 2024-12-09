@@ -59,8 +59,9 @@ func (k *Config) Run(ctx context.Context) (err error) {
 		return fmt.Errorf("run kaniko: %w", err)
 	}
 
+	imageRef := ""
 	if outDir != "" {
-		err = k.writeActionOutputs(outDir, digestFile)
+		imageRef, err = k.writeActionOutputs(outDir, digestFile)
 		if err != nil {
 			return err
 		}
@@ -68,14 +69,14 @@ func (k *Config) Run(ctx context.Context) (err error) {
 
 	fmt.Printf("Saving artifact information for the pushed images...\n")
 	destinations := k.processDestinations()
-	err = k.createArtifactInfo(destinations)
+	err = k.createArtifactInfo(destinations, imageRef)
 	if err != nil {
 		log.Printf("WARN: failed to save artifact information: %v", err)
 	}
 	return nil
 }
 
-func (k *Config) createArtifactInfo(destinations []string) error {
+func (k *Config) createArtifactInfo(destinations []string, imageRef string) error {
 
 	if k.client == nil {
 		return fmt.Errorf("client is nil")
@@ -114,7 +115,7 @@ func (k *Config) createArtifactInfo(destinations []string) error {
 		destination = strings.TrimSpace(destination)
 		fmt.Printf("Saving artifact information for image %v\n", destination)
 
-		artifactInfo, err := k.buildCreateArtifactInfoRequest(destination, runId, runAttempt)
+		artifactInfo, err := k.buildCreateArtifactInfoRequest(destination, imageRef, runId, runAttempt)
 		if err != nil {
 			return err
 		}
@@ -155,7 +156,7 @@ func (k *Config) createArtifactInfo(destinations []string) error {
 // CreateArtifactInfoMap is a map of key-value pairs that is used to store CreateArtifactInfoRequest data
 type CreateArtifactInfoMap map[string]interface{}
 
-func (k *Config) buildCreateArtifactInfoRequest(destination, runId, runAttempt string) (CreateArtifactInfoMap, error) {
+func (k *Config) buildCreateArtifactInfoRequest(destination, imageRef, runId, runAttempt string) (CreateArtifactInfoMap, error) {
 
 	if destination == "" {
 		return nil, fmt.Errorf("destination is empty")
@@ -188,6 +189,13 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, runId, runAttempt s
 		return nil, fmt.Errorf("failed to build kaniko artifact info request: invalid destination format, %s", destination)
 	}
 
+	imageDigest := ""
+	if imageRef != "" {
+		_, after, found := strings.Cut(imageRef, "@")
+		if found {
+			imageDigest = after
+		}
+	}
 	artInfo := CreateArtifactInfoMap{
 		"runId":       runId,
 		"run_attempt": runAttempt,
@@ -195,12 +203,13 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, runId, runAttempt s
 		"version":     imgVer,
 		"url":         destination,
 		"type":        "docker",
+		"digest":      imageDigest,
 	}
 
 	return artInfo, nil
 }
 
-func (k *Config) writeActionOutputs(outDir, digestFile string) error {
+func (k *Config) writeActionOutputs(outDir, digestFile string) (string, error) {
 	dest := k.processDestinations()[0]
 	tag := "latest"
 	if pos := strings.Index(dest, ":"); pos > 0 && pos < len(dest)-1 {
@@ -209,27 +218,28 @@ func (k *Config) writeActionOutputs(outDir, digestFile string) error {
 	}
 	digest, err := os.ReadFile(digestFile)
 	if err != nil {
-		return fmt.Errorf("read kaniko image digest: %w", err)
+		return "", fmt.Errorf("read kaniko image digest: %w", err)
 	}
 	err = os.WriteFile(filepath.Join(outDir, "digest"), digest, 0640)
 	if err != nil {
-		return fmt.Errorf("write digest output: %w", err)
+		return "", fmt.Errorf("write digest output: %w", err)
 	}
 	err = os.WriteFile(filepath.Join(outDir, "tag"), []byte(tag), 0640)
 	if err != nil {
-		return fmt.Errorf("write tag output: %w", err)
+		return "", fmt.Errorf("write tag output: %w", err)
 	}
 	tagDigest := fmt.Sprintf("%s@%s", tag, string(digest))
 	err = os.WriteFile(filepath.Join(outDir, "tag-digest"), []byte(tagDigest), 0640)
 	if err != nil {
-		return fmt.Errorf("write tag-digest output: %w", err)
+		return "", fmt.Errorf("write tag-digest output: %w", err)
 	}
+	// NOTE: if imageRef format is changed, NEED to update logic to fetch digest in buildCreateArtifactInfoRequest func
 	imageRef := fmt.Sprintf("%s:%s@%s", dest, tag, string(digest))
 	err = os.WriteFile(filepath.Join(outDir, "image"), []byte(imageRef), 0640)
 	if err != nil {
-		return fmt.Errorf("write image output: %w", err)
+		return "", fmt.Errorf("write image output: %w", err)
 	}
-	return nil
+	return imageRef, nil
 }
 
 func (k *Config) processDestinations() []string {
