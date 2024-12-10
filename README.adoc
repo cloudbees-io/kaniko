@@ -2,6 +2,8 @@
 
 Use this action to build and publish Docker images using link:https://github.com/GoogleContainerTools/kaniko[Kaniko], which builds container images from a Dockerfile. Kaniko builds images inside a container or Kubernetes cluster.
 
+The action is also instrumented to report back to the workflow run the image and tags names for artifact traceability purposes.
+
 == Prerequisites
 
 To authenticate with the Docker registry, you must have a Docker config file in the `${HOME}/.docker/config.json` path.
