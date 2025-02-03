@@ -1,8 +1,10 @@
 package kaniko
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -671,7 +673,7 @@ func Test_createArtifactInfo(t *testing.T) {
 		// Prepare a mock response
 		mockResponse := &http.Response{
 			StatusCode: http.StatusBadRequest,
-			Body:       http.NoBody,
+			Body:       io.NopCloser(bytes.NewBufferString("{\n\"error\":{\n\"code\": 400,\n\"message\": \"Bad Request\",\n\"details\": [\n{\n\"field\": \"InvalidArgument\",\n\"issue\":\"artifact information previously saved with digest cannot be republished without the digest.\"\n}\n]\n}\n}")),
 		}
 
 		mockClient := &MockHTTPClient{
@@ -684,8 +686,9 @@ func Test_createArtifactInfo(t *testing.T) {
 		}
 
 		err := c.createArtifactInfo(destinations, "gcr.io/kaniko-project/executor:v1.6.0@sha256:cafebabebeef")
-		require.EqualErrorf(t, err, "request failed: \nPOST https://cloudbees.io/v2/workflows/runs/artifactinfos\nHTTP/400 \n",
-			"failed to create artifact info: \nPOST %s\nHTTP/%d %s\n",
-			"https://cloudbees.io/v2/workflows/runs/artifactinfos", 400, "Bad Request")
+		require.EqualErrorf(t, err, "request failed: \nPOST: https://cloudbees.io/v2/workflows/runs/artifactinfos\nHTTP/400 \nBODY: {\n\"error\":{\n\"code\": 400,\n\"message\": \"Bad Request\",\n\"details\": [\n{\n\"field\": \"InvalidArgument\",\n\"issue\":\"artifact information previously saved with digest cannot be republished without the digest.\"\n}\n]\n}\n}",
+			"failed to create artifact info: \nPOST %s\nHTTP/%d %s\nBODY: %s",
+			"https://cloudbees.io/v2/workflows/runs/artifactinfos", 400, "Bad Request",
+			"{\n\"error\":{\n\"code\": 400,\n\"message\": \"Bad Request\",\n\"details\": [\n{\n\"field\": \"InvalidArgument\",\n\"issue\":\"artifact information previously saved with digest cannot be republished without the digest.\"\n}\n]\n}\n}")
 	})
 }
