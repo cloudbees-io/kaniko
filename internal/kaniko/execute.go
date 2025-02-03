@@ -141,7 +141,6 @@ func (k *Config) createArtifactInfo(destinations []string, imageRef string) erro
 
 		resp, err := k.client.Do(apiReq)
 		if err != nil {
-			fmt.Printf("ERROR: Response: '%v'\n", resp)
 			return err
 		}
 		defer func() { _ = resp.Body.Close() }()
@@ -154,7 +153,6 @@ func (k *Config) createArtifactInfo(destinations []string, imageRef string) erro
 		resBody := string(responseBody)
 
 		if resp.StatusCode != 200 {
-			fmt.Printf("ERROR: Response: '%s'\n", resBody)
 			return fmt.Errorf("request failed: \nPOST: %s\nHTTP/%d %s\nBODY: %s", requestURL, resp.StatusCode, resp.Status, resBody)
 		} else {
 			fmt.Printf("Saved artifact information for image %v\n", destination)
