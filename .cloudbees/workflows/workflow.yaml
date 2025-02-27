@@ -27,7 +27,7 @@ jobs:
         fi
 
     - name: Unit tests
-      uses: docker://golang:1.23.0
+      uses: docker://golang:1.24.0
       run: |
         go test --cover ./...
 
@@ -84,7 +84,7 @@ jobs:
         tar-path: ${{ cloudbees.home }}/image.tar
 
     - name: Check test image
-      uses: docker://alpine:3.18
+      uses: docker://alpine:3.21
       run: |
         apk add -U --no-cache curl ca-certificates
         curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 >/usr/local/bin/regctl
