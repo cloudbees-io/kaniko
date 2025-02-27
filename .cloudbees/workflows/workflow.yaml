@@ -84,23 +84,34 @@ jobs:
         tar-path: ${{ cloudbees.home }}/image.tar
 
     - name: Check test image
-      uses: docker://alpine:3.21
+      uses: docker://gcr.io/go-containerregistry/crane:debug
+      env:
+        GOLDEN_FILE: .cloudbees/testing/expected-paths.txt
       run: |
-        apk add -U --no-cache curl ca-certificates
-        curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 >/usr/local/bin/regctl
-        chmod 755 /usr/local/bin/regctl
-
         EXPECTED=${{ steps.build.outputs.digest }}
-        ACTUAL=`regctl image digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}`
+        ACTUAL=`crane digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }} --platform linux/amd64`
         if [ "$EXPECTED" != "$ACTUAL" ]; then
-          echo "expected $EXPECTED, but got $ACTUAL"
+          echo "FAIL: Expected image digest $EXPECTED, but got $ACTUAL"
           exit 1
         fi
 
         if stat "${{ cloudbees.home }}/image.tar"; then
-          echo "Tar file exists."
+          echo "Kaniko action wrote tar file."
         else
-          echo "Tar file does not exist."
+          echo "FAIL: Kaniko action did not write tar file."
           exit 1
-        fi    
+        fi
 
+        crane export "020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}" /tmp/image-rootfs.tar
+        mkdir /tmp/image-rootfs
+        tar -xf /tmp/image-rootfs.tar -C /tmp/image-rootfs/
+        (cd /tmp/image-rootfs && find . | sort) > /tmp/actual-paths.txt
+        echo
+        echo ACTUAL ROOTFS:
+        cat /tmp/actual-paths.txt | sed -E 's/^/  /'
+        echo
+        if [ "$(comm -3 $GOLDEN_FILE /tmp/actual-paths.txt)" ]; then
+          echo "FAIL: The built test image's rootfs content paths don't match the expected ones defined in $GOLDEN_FILE!"
+          comm -3 $GOLDEN_FILE /tmp/actual-paths.txt
+          exit 1
+        fi
