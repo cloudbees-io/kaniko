@@ -27,7 +27,7 @@ jobs:
         fi
 
     - name: Unit tests
-      uses: docker://golang:1.23.0
+      uses: docker://golang:1.24.0
       run: |
         go test --cover ./...
 
@@ -84,16 +84,17 @@ jobs:
         tar-path: ${{ cloudbees.home }}/image.tar
 
     - name: Check test image
-      uses: docker://alpine:3.18
+      uses: docker://quay.io/skopeo/stable:v1.17
       run: |
-        apk add -U --no-cache curl ca-certificates
-        curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 >/usr/local/bin/regctl
-        chmod 755 /usr/local/bin/regctl
+        # TODO: remove workaround after CBP-10367 is fixed.
+        mkdir -p /cloudbees/home/.config/containers
+        echo '{"default":[{"type":"insecureAcceptAnything"}],"transports":{"docker-daemon":{"":[{"type":"insecureAcceptAnything"}]}}}' > /cloudbees/home/.config/containers/policy.json
 
+        cat ~/.docker/config.json
         EXPECTED=${{ steps.build.outputs.digest }}
-        ACTUAL=`regctl image digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}`
+        ACTUAL=`skopeo inspect docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }} --format {{.Digest}}`
         if [ "$EXPECTED" != "$ACTUAL" ]; then
-          echo "expected $EXPECTED, but got $ACTUAL"
+          echo "expected image digest $EXPECTED, but got $ACTUAL"
           exit 1
         fi
 
@@ -102,5 +103,11 @@ jobs:
         else
           echo "Tar file does not exist."
           exit 1
-        fi    
+        fi
 
+        skopeo copy "020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}" dir:image-dir
+        mkdir image-rootfs
+        grep -Eo '^      "digest": "sha256:[^"]+' image-dir/manifest.json | sed -E 's/^.+:(.+)/image-dir\/\1/' | xargs tar -C image-rootfs -xzf
+        (cd image-rootfs && find . > ../actual-paths.txt)
+        comm -3 .cloudbees/testing/expected-paths.txt actual-paths.txt
+        [ ! "$(comm -3 .cloudbees/testing/expected-paths.txt actual-paths.txt)" ]
