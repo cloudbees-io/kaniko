@@ -1,6 +1,8 @@
 = CloudBees action: Build and publish Docker images with Kaniko
 
-This action uses link:https://github.com/GoogleContainerTools/kaniko[Kaniko] to build images based upon a Dockerfile then publish the image to a Docker registry.  Kaniko builds images inside a container or kubernetes cluster. This action also reports the image and tag names to the workflow run for artifact traceability purposes.
+Use the Kaniko action to build images based upon a Dockerfile, then publish the image to a Docker registry.
+Kaniko builds images inside a container or {K8S} cluster.
+This action also reports the image and tag names to the workflow run for artifact traceability purposes.
 
 == Prerequisites
 
