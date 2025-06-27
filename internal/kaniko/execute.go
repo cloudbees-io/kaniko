@@ -199,6 +199,7 @@ func writeArtifactIdsAsOutput(value map[string]string) error {
 	if err != nil {
 		return fmt.Errorf("failed to write to %s: %w", outputFile, err)
 	}
+	fmt.Printf("Output parameter '%s' value %v written to %s\n", "artifactIds", value, outputFile)
 	return nil
 }
 
