@@ -41,13 +41,13 @@ COPY . .
 # Then submit a PR with the changes to `go.mod`, `go.sum`, and `vendor`.
 
 # Get GCR credential helper
-RUN go install github.com/GoogleCloudPlatform/docker-credential-gcr/v2
+RUN go install github.com/GoogleCloudPlatform/docker-credential-gcr/v2@v2.1.9
 
 # Get Amazon ECR credential helper
-RUN go install github.com/awslabs/amazon-ecr-credential-helper/ecr-login/cli/docker-credential-ecr-login
+RUN go install github.com/awslabs/amazon-ecr-credential-helper/ecr-login/cli/docker-credential-ecr-login@v0.6.0
 
 # Get ACR docker env credential helper
-RUN go install github.com/chrismellard/docker-credential-acr-env
+RUN go install github.com/chrismellard/docker-credential-acr-env@v0.5.0
 
 RUN \
   --mount=type=cache,target=/root/.cache/go-build \
