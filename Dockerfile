@@ -41,7 +41,7 @@ COPY . .
 # Then submit a PR with the changes to `go.mod`, `go.sum`, and `vendor`.
 
 # Get GCR credential helper
-RUN go install github.com/GoogleCloudPlatform/docker-credential-gcr/v2@v2.1.9
+RUN go install github.com/GoogleCloudPlatform/docker-credential-gcr/v2@v2.0.0
 
 # Get Amazon ECR credential helper
 RUN go install github.com/awslabs/amazon-ecr-credential-helper/ecr-login/cli/docker-credential-ecr-login@v0.6.0
@@ -58,12 +58,12 @@ RUN \
 FROM debian:bookworm-slim AS certs
 RUN apt update && apt install -y ca-certificates
 
-# use musl busybox since it's staticly compiled on all platforms
+# use musl busybox since it's statically compiled on all platforms
 FROM busybox:musl AS busybox
 
 FROM scratch AS kaniko-base-slim
 
-# Create kaniko directory with world write permission to allow non root run
+# Create kaniko directory with world write permission to allow non-root run
 RUN --mount=from=busybox,dst=/usr/ ["busybox", "sh", "-c", "mkdir -p /kaniko && chmod 777 /kaniko"]
 
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /kaniko/ssl/certs/
