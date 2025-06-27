@@ -11,7 +11,37 @@ permissions:
   id-token: write
 
 jobs:
+  build-base-kaniko-image:
+    steps:
+    - name: Get source code
+      uses: cloudbees-io/checkout@v1 
+      with:
+        repository: chainguard-dev/kaniko
+
+    - name: Login to AWS
+      uses: cloudbees-io/configure-aws-credentials@v1
+      with:
+        aws-region: us-east-1
+        role-to-assume: ${{ vars.oidc_staging_iam_role }}
+        role-duration-seconds: "3600"
+
+    - name: Configure container registry for ECR
+      uses: cloudbees-io/configure-ecr-credentials@v1
+
+    - name: Build image
+      id: build-image
+      uses: cloudbees-io/kaniko@v1
+      with:
+        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/chainguard-dev-kaniko-base:${{ cloudbees.scm.sha }},020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/chainguard-dev-kaniko-base:latest
+
+    - name: Run TruffleHog Container Action
+      uses: cloudbees-io/trufflehog-secret-scan-container@v1
+      with:
+        image-location: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/chainguard-dev-kaniko-base
+        image-tag: ${{ cloudbees.scm.sha }}
+
   build:
+    needs: [build-base-kaniko-image]
     steps:
     - name: Get source code
       uses: cloudbees-io/checkout@v1
