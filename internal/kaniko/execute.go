@@ -112,6 +112,9 @@ func (k *Config) createArtifactInfo(destinations []string, imageRef string) erro
 		return fmt.Errorf("missing CLOUDBEES_RUN_ATTEMPT environment variable")
 	}
 
+	// map artifact version IDs to their corresponding image destinations
+	artifactVersionsResult := make(map[string]string, len(destinations))
+
 	for _, destination := range destinations {
 		destination = strings.TrimSpace(destination)
 		fmt.Printf("Saving artifact information for image %v\n", destination)
@@ -156,7 +159,45 @@ func (k *Config) createArtifactInfo(destinations []string, imageRef string) erro
 			return fmt.Errorf("request failed: \nPOST: %s\nHTTP/%d %s\nBODY: %s", requestURL, resp.StatusCode, resp.Status, resBody)
 		} else {
 			fmt.Printf("Saved artifact information for image %v\n", destination)
+
+			jsonResponseMap := make(map[string]interface{})
+			err = json.Unmarshal(responseBody, &jsonResponseMap)
+			if err != nil {
+				return err
+			}
+
+			if id, ok := jsonResponseMap["id"].(string); ok {
+				// Store the artifact ID in the result map
+				artifactVersionsResult[destination] = id
+			} else {
+				return fmt.Errorf("unexpected response format: missing 'id' field in response for destination %s", destination)
+			}
 		}
+	}
+
+	err = writeArtifactIdsAsOutput(artifactVersionsResult)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func writeArtifactIdsAsOutput(value map[string]string) error {
+	outputsDir := os.Getenv("CLOUDBEES_OUTPUTS")
+	if outputsDir == "" {
+		return fmt.Errorf("CLOUDBEES_OUTPUTS environment variable missing")
+	}
+
+	outputBytes, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+
+	outputFile := filepath.Join(outputsDir, "artifactIds")
+	err = os.WriteFile(outputFile, outputBytes, 0640)
+	if err != nil {
+		return fmt.Errorf("failed to write to %s: %w", outputFile, err)
 	}
 	return nil
 }

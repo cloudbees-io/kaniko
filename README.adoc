@@ -100,6 +100,29 @@ NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
 
 |===
 
+== Outputs
+
+[cols="2a,1a,3a",options="header"]
+.Output details
+|===
+
+| Output name
+| Data type
+| Description
+
+| `artifactIds`
+| String
+| The output parameter for artifact IDs.
+
+These artifact IDs values can be accessed in subsequent steps using the outputs context. For example, to return:
+
+* All artifact ID values provided by action in JSON format use: `${{ steps.<action_step_name>.outputs.artifactIds }}`.
+
+* A specific artifact ID value use: `${{ fromJSON(steps.<action_step_name>.outputs.artifactIds).<destination URL>}}`.
+
+
+|===
+
 == Usage example
 
 In your YAML file, add:
