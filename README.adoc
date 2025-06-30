@@ -119,6 +119,8 @@ These artifact IDs values can be accessed in subsequent steps using the outputs 
 * All artifact ID values provided by action in JSON format use: `${{ steps.<action_step_name>.outputs.artifactIds }}`.
 
 * A specific artifact ID value use: `${{ fromJSON(steps.<action_step_name>.outputs.artifactIds).<destination URL>}}`.
+For instance kaniko action was used in the step with name "kaniko-build", and the destination URL is `registry.example.com/my-image:latest`, then you can access the artifact ID using:
+`${{ fromJSON(steps.kaniko-build.outputs.artifactIds)['registry.example.com/my-image:latest'] }}`. In case of multiple destination URLs, you can access each one by its key. And if destination URL is dynamically.
 
 
 |===
