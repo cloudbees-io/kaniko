@@ -32,8 +32,6 @@ jobs:
       id: build-image
       uses: cloudbees-io/kaniko@v1
       with:
-        context: ../../..
-        dockerfile: Dockerfile
         destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/chainguard-dev-kaniko-base:${{ cloudbees.scm.sha }},020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/chainguard-dev-kaniko-base:latest
 
     - name: Run TruffleHog Container Action
