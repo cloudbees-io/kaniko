@@ -28,6 +28,11 @@ jobs:
     - name: Configure container registry for ECR
       uses: cloudbees-io/configure-ecr-credentials@v1
 
+    - name: Debug File Permissions
+      uses: docker://golang:1.24.0
+      run: |
+        ls -la ${{ cloudbees.workspace }}
+
     - name: Build image
       id: build-image
       uses: cloudbees-io/kaniko@v1
