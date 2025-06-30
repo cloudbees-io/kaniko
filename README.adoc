@@ -49,7 +49,7 @@ NOTE: The `+"auth":"<USERNAME>:<PASSWORD>"+` field must be base64-encoded.
 
 == Inputs
 
-[cols="2a,1a,1a,3a",options="header"]
+[cols="30%,15%,15%,40%",options="header"]
 .Input details
 |===
 
@@ -118,7 +118,7 @@ Default is `info`.
 
 == Output
 
-[cols="2a,1a,3a",options="header"]
+[cols="30%,20%,50%",options="header"]
 .Output details
 |===
 
@@ -128,7 +128,7 @@ Default is `info`.
 
 | `artifactIds`
 | String
-| The unique identifier of the artifact reported to the {PRODUCT}.
+| The unique identifier of the artifact reported to the CloudBees platform.
 |===
 
 === Using the action output
