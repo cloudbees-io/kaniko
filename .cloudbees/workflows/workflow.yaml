@@ -145,4 +145,3 @@ jobs:
           comm -3 $GOLDEN_FILE /tmp/actual-paths.txt
           exit 1
         fi
-
