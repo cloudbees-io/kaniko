@@ -72,6 +72,10 @@ outputs:
       Tools loading such an image reference ignore the tag but perform the lookup based on the image repository and digest only.
       The tag only serves as a hint for humans.
       Using this image reference format guarantees that the image is continued to be used even when the tag was overwritten and prevents stale image caches on different nodes.
+  artifactIds:
+    value: ${{ steps.imgbuild.outputs.artifactIds }}
+    description: |
+      Artifact IDs for the published images reported to the workflow run for artifact traceability purposes.
 
 runs:
   using: composite

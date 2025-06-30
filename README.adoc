@@ -6,12 +6,12 @@ This action also reports the image and tag names to the workflow run for artifac
 
 == Prerequisites
 
-To authenticate with the Docker registry, you must have a Docker config file in the `${HOME}/.docker/config.json` path.
-
+. To authenticate with the Docker registry, you must have a Docker config file in the `${HOME}/.docker/config.json` path.
++
 Use link:https://github.com/cloudbees-io/configure-oci-credentials[the OCI credentials configuration action] to generate a Docker config file, as in the following example.
-
++
 In your YAML file, add:
-
++
 [source,yaml]
 ----
 
@@ -25,13 +25,15 @@ In your YAML file, add:
 
 ----
 
-The Docker config file must be formatted in JSON, as follows:
-To use the following example, make these updates:
-
-* Replace <REGISTRY_HOST> with your registry host URL.
-* Replace <USERNAME> with your username.
-* Replace <PASSWORD> with your password.
-
+. The Docker config file must be formatted in JSON.
+To use the following example, replace:
++
+* <REGISTRY_HOST> with your registry host URL.
+* <USERNAME> with your username.
+* <PASSWORD> with your password.
++
+NOTE: The `+"auth":"<USERNAME>:<PASSWORD>"+` field must be base64-encoded.
++
 [source,json,role="novalidate"]
 ----
 {
@@ -44,9 +46,6 @@ To use the following example, make these updates:
 	}
 }
 ----
-
-NOTE: The `+"auth":"<USERNAME>:<PASSWORD>"+` field must be base64-encoded.
-
 
 == Inputs
 
@@ -68,7 +67,7 @@ Formatted as a comma-separated list for passing multiple images.
 | `build-args`
 | String
 | No
-| The build arguments to be passed to the Kaniko build. 
+| The build arguments to be passed to the Kaniko build.
 Formatted as a comma-separated list for passing multiple build arguments.
 
 | `context`
@@ -82,12 +81,6 @@ Default is `${{ cloudbees.workspace }}`.
 | No
 | The path to the Dockerfile to be built.
 Default is `Dockerfile`.
-
-| `labels`
-| String
-| No
-| The label metadata added to the final image.
-Formatted as a comma-separated list for passing multiple labels.
 
 | `labels`
 | String
@@ -123,7 +116,7 @@ Default is `info`.
 
 |===
 
-== Outputs
+== Output
 
 [cols="2a,1a,3a",options="header"]
 .Output details
@@ -133,10 +126,19 @@ Default is `info`.
 | Data type
 | Description
 
-| `artifact-id`
+| `artifactIds`
 | String
-| The unique identifier of the artifact reported to the CloudBees platform.
+| The unique identifier of the artifact reported to the {PRODUCT}.
 |===
+
+=== Using the action output
+
+Access the `artifactIds` values in downstream steps using the `outputs` xref:dsl-syntax:contexts.adoc[context].
+To use the following examples, replace <ACTION_STEP_NAME> with the action step name, and <DESTINATION_URL> with the destination URL.
+
+* For all artifact ID values in JSON format provided by the action, use: `${{ steps.<ACTION_STEP_NAME>.outputs.artifactIds }}`.
+
+* For a specific artifact ID value use: `${{ fromJSON(steps.<ACTION_STEP_NAME>.outputs.artifactIds).<DESTINATION_URL>}}`.
 
 == Usage examples
 
@@ -154,7 +156,7 @@ The following is a basic usage example for this action:
 
 === Using optional inputs
 
-The following example specifies the build args, context, Dockerfile, labels, and verbosity:
+The following example specifies optional inputs:
 
 [source,yaml]
 ----
@@ -166,17 +168,10 @@ The following example specifies the build args, context, Dockerfile, labels, and
           context: .
           dockerfile: path/to/Dockerfile
           labels: maintainer=John Smith,version=1.0.1
+          tar-path: path/to/image.tar
           verbosity: warn
 
 ----
-
-=== Using action outputs
-
-Access the `artifact-id` values in downstream steps using the `outputs` xref:dsl-syntax:contexts.adoc[context].
-
-* For all artifact ID values in JSON format provided by the action, use: `${{ steps.<action_step_name>.outputs.artifact-id }}`.
-
-* For a specific artifact ID value use: `${{ fromJSON(steps.<action_step_name>.outputs.artifact-id).<destination URL>}}`.
 
 === Full workflow example
 
@@ -185,8 +180,9 @@ The following workflow example:
 * Checks out source code from a repository.
 * Configures Docker credentials.
 * Builds and publishes a container image with Kaniko.
+* Prints the artifact IDs for both static and dynamically created destinations.
 * Promotes the image to AWS ECR.
-* Accesses the `artifact-id` value in the step to promote the image to ECR.
+* Accesses the `artifactIds` value in the step to promote the image to ECR.
 
 [source,yaml,role="default-expanded"]
 ----
@@ -210,27 +206,39 @@ jobs:
         uses: cloudbees-io/checkout@v1
         with:
           repository: my-name/my-repo-name
-      - id: dockerconfig
-        name: Configure container registry credentials
+      - name: Configure container registry credentials
+        id: dockerconfig
         uses: cloudbees-io/configure-oci-credentials@v1
         with:
           registry: ${{ vars.DOCKER_REGISTRY }}
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build-with-Kaniko
+      - name: Build with Kaniko
+        id: build
         uses: cloudbees-io/kaniko@v1
         kind: build
         with:
           destination: ${{ vars.DOCKER_REGISTRY }}:latest
           dockerfile: my-dockerhub/docker/config.json
+      - name: Print output parameter artifact IDs from Kaniko action
+        id: echo-artifact-ids
+        uses: docker://alpine:latest
+        shell: sh
+        run: |
+          echo "artifact IDs output parameter values: ${{ steps.build-with-kaniko.outputs.artifactIds }}"
+          echo "single artifact ID for the static destination '<registry host>/<image name>:latest': ${{ fromJSON(steps.kaniko-build.outputs.artifactIds)['<registry host>/<image name>:latest'] }}"
+          echo "single artifact ID for the dynamically created destination '${{ env.DYNAMIC_DESTINATION }}': ${{ fromJSON(steps.kaniko-build.outputs.artifactIds)[env.DYNAMIC_DESTINATION] }}"
+        env:
+          DYNAMIC_DESTINATION:  "<registry host>/<image name>:-${{ cloudbees.version }}"
       - name: Promote an image in ECR
         uses: cloudbees-io/ecr-promote-image@v1
         with:
            registry-url: ${{ secrets.AWS_ECR_PATH }}
            source-repository-name: my-repo-name
-           target-repository-name: ${{ fromJSON(steps.build-with-kaniko.outputs.artifact-id).${{ secrets.AWS_ECR_PATH }} }}
+           target-repository-name: ${{ fromJSON(steps.build-with-kaniko.outputs.artifactIds).${{ secrets.AWS_ECR_PATH }} }}
            source-tag: ${{ vars.DOCKER_REGISTRY }}:latest
            target-tag: ${{ secrets.AWS_ECR_PATH }}:latest
+
 ----
 
 == License

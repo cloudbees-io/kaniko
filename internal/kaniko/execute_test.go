@@ -628,12 +628,12 @@ func Test_createArtifactInfo(t *testing.T) {
 
 	t.Run("create - Success", func(t *testing.T) {
 		setOSEnv()
-		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", "gcr.io/kaniko-project/executor:v1.6.1"}
+		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0"}
 
 		// Prepare a mock response
 		mockResponse := &http.Response{
 			StatusCode: http.StatusOK,
-			Body:       http.NoBody,
+			Body:       io.NopCloser(bytes.NewBufferString("{\n\"id\":\"artifact UUID\"\n}")),
 		}
 
 		mockClient := &MockHTTPClient{
@@ -645,8 +645,19 @@ func Test_createArtifactInfo(t *testing.T) {
 			client: mockClient,
 		}
 
-		err := c.createArtifactInfo(destinations, "gcr.io/kaniko-project/executor:v1.6.0@sha256:cafebabebeef")
+		tmpDir, err := os.MkdirTemp("", "kaniko-test")
 		require.NoError(t, err)
+		defer os.RemoveAll(tmpDir)
+
+		os.Setenv("CLOUDBEES_OUTPUTS", tmpDir)
+		defer os.Unsetenv("CLOUDBEES_OUTPUTS")
+
+		err = c.createArtifactInfo(destinations, "gcr.io/kaniko-project/executor:v1.6.0@sha256:cafebabebeef")
+		require.NoError(t, err)
+
+		v, err := os.ReadFile(filepath.Join(tmpDir, "artifactIds"))
+		require.NoError(t, err, "artifactIds")
+		require.Equal(t, `{"gcr.io/kaniko-project/executor:v1.6.0":"artifact UUID"}`, string(v), "artifactIds content")
 	})
 
 	t.Run("create - Error", func(t *testing.T) {
