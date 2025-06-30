@@ -142,14 +142,15 @@ In your YAML file, add:
           labels: maintainer=John Smith,version=${{cloudbees.version}}
           verbosity: info
           tar-path: path/to/save/image.tar
+
       - id: echo-artifact-ids
         uses: docker://alpine:latest
         name: Print output parameter artifactIds from Kaniko action
         shell: sh
         run: |
           echo "artifactIds output parameter values: ${{ steps.kaniko-build.outputs.artifactIds }}"
-          echo "single artifact ID per static destination '<registry host>/<image name>:latest': ${{ fromJSON(steps.kaniko-build.outputs.artifactIds)['<registry host>/<image name>:latest'] }}"
-          echo "single artifact ID per dynamically created destination '${{ env.DYNAMIC_DESTINATION }}': ${{ fromJSON(steps.kaniko-build.outputs.artifactIds)[env.DYNAMIC_DESTINATION] }}"
+          echo "single artifact ID for the static destination '<registry host>/<image name>:latest': ${{ fromJSON(steps.kaniko-build.outputs.artifactIds)['<registry host>/<image name>:latest'] }}"
+          echo "single artifact ID for the dynamically created destination '${{ env.DYNAMIC_DESTINATION }}': ${{ fromJSON(steps.kaniko-build.outputs.artifactIds)[env.DYNAMIC_DESTINATION] }}"
         env:
           DYNAMIC_DESTINATION:  "<registry host>/<image name>:-${{ cloudbees.version }}"
 
