@@ -75,7 +75,7 @@ outputs:
   artifactIds:
     value: ${{ steps.imgbuild.outputs.artifactIds }}
     description: |
-      Artifact IDs of all specified destinations.
+      Artifact IDs for the published images reported to the workflow run for artifact traceability purposes.
 
 runs:
   using: composite
