@@ -100,22 +100,59 @@ NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
 
 |===
 
+== Outputs
+
+[cols="2a,1a,3a",options="header"]
+.Output details
+|===
+
+| Output name
+| Data type
+| Description
+
+| `artifactIds`
+| String
+| The output parameter for artifact IDs.
+
+These artifact IDs values can be accessed in subsequent steps using the outputs context. For example, to return:
+
+* All artifact ID values provided by action in JSON format use: `${{ steps.<action_step_name>.outputs.artifactIds }}`.
+
+* A specific artifact ID value use: `${{ fromJSON(steps.<action_step_name>.outputs.artifactIds).<destination URL>}}`.
+
+For instance kaniko action was used in the step with name "kaniko-build", and the destination URL is `registry.example.com/my-image:latest`, then you can access the artifact ID using:
+`${{ fromJSON(steps.kaniko-build.outputs.artifactIds)['registry.example.com/my-image:latest'] }}`.
+
+|===
+
 == Usage example
 
 In your YAML file, add:
 
 [source,yaml]
 ----
-      - name: Build a container image with Kaniko
+      - id: kaniko-build
+        name: Build a container image with Kaniko
         uses: cloudbees-io/kaniko@v1
         with:
           dockerfile: path/to/Dockerfile
           context: .
-          destination: <registry host>/<image name>:1.0.1,<registry host>/<image name>:latest
+          destination: <registry host>/<image name>:${{cloudbees.version}},<registry host>/<image name>:latest
           build-args: BUILDKIT_CONTEXT_KEEP_GIT_DIR=1,BUILDKIT_INLINE_CACHE=1
-          labels: maintainer=John Smith,version=1.0.1
+          labels: maintainer=John Smith,version=${{cloudbees.version}}
           verbosity: info
           tar-path: path/to/save/image.tar
+
+      - id: echo-artifact-ids
+        uses: docker://alpine:latest
+        name: Print output parameter artifactIds from Kaniko action
+        shell: sh
+        run: |
+          echo "artifactIds output parameter values: ${{ steps.kaniko-build.outputs.artifactIds }}"
+          echo "single artifact ID for the static destination '<registry host>/<image name>:latest': ${{ fromJSON(steps.kaniko-build.outputs.artifactIds)['<registry host>/<image name>:latest'] }}"
+          echo "single artifact ID for the dynamically created destination '${{ env.DYNAMIC_DESTINATION }}': ${{ fromJSON(steps.kaniko-build.outputs.artifactIds)[env.DYNAMIC_DESTINATION] }}"
+        env:
+          DYNAMIC_DESTINATION:  "<registry host>/<image name>:-${{ cloudbees.version }}"
 
 ----
 
