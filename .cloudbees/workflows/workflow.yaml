@@ -31,6 +31,7 @@ jobs:
     - name: Debug File Permissions
       uses: docker://golang:1.24.0
       run: |
+        git config --global --add safe.directory ${{ cloudbees.workspace }}
         ls -la ${{ cloudbees.workspace }}
 
     - name: Build image
