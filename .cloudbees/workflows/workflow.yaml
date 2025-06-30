@@ -31,9 +31,9 @@ jobs:
     - name: Debug File Permissions
       uses: docker://golang:1.24.0
       run: |
-        git config --global user.name "CI user"
-        git config --global user.email "engineering@cloudbees.com"
-        git config --global --list
+        git config user.name "CI user"
+        git config user.email "engineering@cloudbees.com"
+        git config --list
         ls -la ${{ cloudbees.workspace }}
 
     - name: Build image
