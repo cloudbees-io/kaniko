@@ -38,7 +38,8 @@ jobs:
         cd kaniko-src
         git config user.name "ci"
         git config user.email "ci@example.com"
-        echo 'ARG GOFLAGS="-buildvcs=false"' >> deploy/Dockerfile
+        sed -i '/^ARG TARGETOS$/a ARG GOFLAGS="-buildvcs=false"' deploy/Dockerfile
+        sed -i 's|busybox sh -c|sh -c|g' deploy/Dockerfile
         git add deploy/Dockerfile
         git diff --cached > ../goflags-fix.diff
         git commit -m "Add GOFLAGS arg"
