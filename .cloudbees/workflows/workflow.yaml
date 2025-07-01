@@ -38,8 +38,13 @@ jobs:
         cd kaniko-src
         git config user.name "ci"
         git config user.email "ci@example.com"
+        
+        # Add GOFLAGS after ARG TARGETOS
         sed -i '/^ARG TARGETOS/a ARG GOFLAGS="-buildvcs=false"' deploy/Dockerfile
-        echo 'RUN apk add --no-cache busybox' >> deploy/Dockerfile
+        
+        # Override CMD to avoid busybox
+        echo 'CMD ["/bin/sh", "-c", "mkdir -p /kaniko && chmod 777 /kaniko"]' >> deploy/Dockerfile
+        
         git add deploy/Dockerfile
         git diff --cached > ../goflags-fix.diff
         git commit -m "Add GOFLAGS arg"
