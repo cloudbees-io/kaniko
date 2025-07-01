@@ -32,28 +32,16 @@ jobs:
     - name: Configure container registry for ECR
       uses: cloudbees-io/configure-ecr-credentials@v1
 
-    - name: Append GOFLAGS and replace busybox with sh
+    - name: Append GOFLAGS and generate diff
       uses: docker://golang:1.24.0
       run: |
         cd kaniko-src
         git config user.name "ci"
         git config user.email "ci@example.com"
-
-        # Add ARG GOFLAGS after ARG TARGETOS
-        sed -i '/^ARG TARGETOS$/a ARG GOFLAGS="-buildvcs=false"' deploy/Dockerfile
-
-        # Replace busybox with sh (to avoid exec error)
-        sed -i 's|busybox sh -c|sh -c|g' deploy/Dockerfile
-
+        echo 'ARG GOFLAGS="-buildvcs=false"' >> deploy/Dockerfile
         git add deploy/Dockerfile
-        git commit -m "Add GOFLAGS arg and replace busybox with sh"
         git diff --cached > ../goflags-fix.diff
-
-    - name: Apply Git Diff Patch
-      uses: docker://golang:1.24.0
-      run: |
-        cd kaniko-src
-        git apply ../goflags-fix.diff
+        git commit -m "Add GOFLAGS arg"
 
     - name: Build patched Kaniko image
       id: build-image
@@ -64,7 +52,7 @@ jobs:
         destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/chainguard-dev-kaniko-base:${{ cloudbees.scm.sha }},020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/chainguard-dev-kaniko-base:latest
         labels: maintainer=sdp-pod-3,email=engineering@cloudbees.io
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
-        
+
     - name: Run TruffleHog on base image
       uses: cloudbees-io/trufflehog-secret-scan-container@v1
       with:
@@ -115,7 +103,7 @@ jobs:
       with:
         image-location: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action
         image-tag: ${{ cloudbees.scm.sha }}
-
+  
   test:
     needs: [build]
     steps:
