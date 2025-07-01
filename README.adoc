@@ -190,9 +190,9 @@ The following is an example of an `artifact-ids` JSON for two artifact IDs:
 
 Use the `artifact-ids` output as follows, where <action_step_ID> is the action step ID, and <destination_URL> is the destination URL:
 
-* `${{ steps.<action_step_ID>.outputs.artifactIds }}` for a JSON string of all outputted artifact ID values.
+* `${{ steps.<action_step_ID>.outputs.artifact-ids }}` for a JSON string of all outputted artifact ID values.
 
-* `${{ fromJSON(steps.<action_step_ID>.outputs.artifactIds).<destination_URL> }}` for a single artifact ID value.
+* `${{ fromJSON(steps.<action_step_ID>.outputs.artifact-ids).<destination_URL> }}` for a single artifact ID value.
 
 === Full workflow example
 
