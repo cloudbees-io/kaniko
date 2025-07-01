@@ -40,8 +40,8 @@ jobs:
         git config user.email "ci@example.com"
         echo 'ARG GOFLAGS="-buildvcs=false"' >> deploy/Dockerfile
         git add deploy/Dockerfile
-        git commit -m "Add GOFLAGS arg"
         git diff --cached > ../goflags-fix.diff
+        git commit -m "Add GOFLAGS arg"
 
     - name: Apply Git Diff Patch
       uses: docker://golang:1.24.0
