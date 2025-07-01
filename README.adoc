@@ -3,7 +3,7 @@
 Use the Kaniko action to build images based upon a Dockerfile, then publish the image to a Docker registry.
 Kaniko builds images inside a container or Kubernetes cluster.
 This action also publishes the image and tag names to the platform for artifact traceability purposes. 
-View build artifact information in the workflow menu:Runs[Run details > Build artifacts] and artifacts in menu:Components[Artifacts].
+View build artifact information in *Build artifacts* of *Run details* and in *Artifacts*.
 
 == Prerequisites
 
