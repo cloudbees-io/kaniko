@@ -32,7 +32,7 @@ jobs:
     - name: Configure container registry for ECR
       uses: cloudbees-io/configure-ecr-credentials@v1
 
-    - name: Append GOFLAGS and generate diff
+    - name: Patch Dockerfile
       uses: docker://golang:1.24.0
       run: |
         cd kaniko-src
@@ -42,7 +42,7 @@ jobs:
         sed -i 's|busybox sh -c|sh -c|g' deploy/Dockerfile
         git add deploy/Dockerfile
         git diff --cached > ../goflags-fix.diff
-        git commit -m "Add GOFLAGS arg"
+        git commit -m "Patch Dockerfile"
 
     - name: Build patched Kaniko image
       id: build-image
