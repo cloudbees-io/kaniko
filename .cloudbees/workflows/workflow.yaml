@@ -21,6 +21,7 @@ jobs:
       with:
         repository: chainguard-dev/kaniko
         path: kaniko-src
+        ref: v1.25.0
 
     - name: Login to AWS
       uses: cloudbees-io/configure-aws-credentials@v1
