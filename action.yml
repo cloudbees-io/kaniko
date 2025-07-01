@@ -22,6 +22,7 @@ inputs:
     description: >
       Docker build arguments.
       Type: CSV
+    default: GOFLAGS=-buildvcs=false
   labels:
     description: >
       Metadata to be associated with the resulting image.
