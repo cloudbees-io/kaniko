@@ -250,8 +250,6 @@ jobs:
         run: |
           echo "artifact ID for my-image:${{ cloudbees.version }}: '${{ env.DESTINATION1 }}': ${{ fromJSON(steps.kaniko-build.outputs.artifactIds)[env.DESTINATION1] }}"
           echo "artifact ID for my-image-test:${{ cloudbees.version }}: '${{ env.DESTINATION2 }}': ${{ fromJSON(steps.kaniko-build.outputs.artifactIds)[env.DESTINATION2] }}"
-          echo "artifact IDs are:${{ cloudbees.version }}: '${{ env.DESTINATION2 }}': ${{ fromJSON(steps.kaniko-build.outputs.artifactIds)[env.DESTINATION2] }}"
-      
 
 ----
 
