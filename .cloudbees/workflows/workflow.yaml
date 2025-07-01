@@ -43,7 +43,8 @@ jobs:
           print "ARG GOFLAGS=\"-buildvcs=false\"";
           print "RUN sh -c '\''mkdir -p /kaniko && chmod 777 /kaniko'\''";
           next
-        }1' deploy/Dockerfile | sed -E 's|RUN busybox sh -c |RUN sh -c |' > deploy/Dockerfile.tmp && mv deploy/Dockerfile.tmp deploy/Dockerfile
+        }1' deploy/Dockerfile > deploy/Dockerfile.tmp && mv deploy/Dockerfile.tmp deploy/Dockerfile
+        sed -i -E 's|RUN busybox sh -c |RUN sh -c |' deploy/Dockerfile
         git add deploy/Dockerfile
         git diff --cached > ../goflags-fix.diff
         git commit -m "Add GOFLAGS arg and replace busybox with sh"
