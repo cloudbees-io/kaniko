@@ -1,0 +1,12 @@
+diff --git a/deploy/Dockerfile b/deploy/Dockerfile
+index f80f2007..4f3c1de8 100644
+--- a/deploy/Dockerfile
++++ b/deploy/Dockerfile
+@@ -18,6 +18,7 @@ WORKDIR /src
+ # This arg is passed by docker buildx & contains the target CPU architecture (e.g., amd64, arm64, etc.)
+ ARG TARGETARCH
+ ARG TARGETOS
++ARG GOFLAGS="-buildvcs=false"
+ 
+ ENV GOARCH=$TARGETARCH
+ ENV GOOS=$TARGETOS
