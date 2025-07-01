@@ -147,7 +147,7 @@ The following example specifies optional inputs:
 
 === Using the action output
 
-Access the `artifact-ids` values in downstream steps using the `outputs` xref:dsl-syntax:contexts.adoc[context].
+Access the `artifact-ids` values in downstream steps using the `outputs` link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/dsl-syntax/contexts[context].
 
 The following is the JSON format for the `artifact-ids` ouput, where `<destination>` is the specified `destination` input parameter value, and `<artifact-version-id>` is the unique identifier of the artifact version.
 
