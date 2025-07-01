@@ -28,13 +28,10 @@ jobs:
     - name: Configure container registry for ECR
       uses: cloudbees-io/configure-ecr-credentials@v1
 
-    - name: Debug File Permissions
+    - name: Applying Git Diff Patch
       uses: docker://golang:1.24.0
       run: |
-        git config user.name "CI user"
-        git config user.email "engineering@cloudbees.com"
-        git config --list
-        ls -la ${{ cloudbees.workspace }}
+        git apply goflags-fix.diff
 
     - name: Build image
       id: build-image
