@@ -36,6 +36,8 @@ jobs:
       uses: docker://golang:1.24.0
       run: |
         cd kaniko-src
+        git config user.name "ci"
+        git config user.email "ci@example.com"
         echo 'ARG GOFLAGS="-buildvcs=false"' >> deploy/Dockerfile
         git add deploy/Dockerfile
         git commit -m "Add GOFLAGS arg"
