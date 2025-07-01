@@ -32,16 +32,21 @@ jobs:
     - name: Configure container registry for ECR
       uses: cloudbees-io/configure-ecr-credentials@v1
 
-    - name: Append GOFLAGS and generate diff
+    - name: Append GOFLAGS, fix busybox, and generate diff
       uses: docker://golang:1.24.0
       run: |
         cd kaniko-src
         git config user.name "ci"
         git config user.email "ci@example.com"
-        awk '/^ARG TARGETOS$/ { print; print "ARG GOFLAGS=\"-buildvcs=false\""; print "RUN sh -c '\''mkdir -p /kaniko && chmod 777 /kaniko'\''"; next }1' deploy/Dockerfile > deploy/Dockerfile.tmp && mv deploy/Dockerfile.tmp deploy/Dockerfile
+        awk '/^ARG TARGETOS$/ {
+          print;
+          print "ARG GOFLAGS=\"-buildvcs=false\"";
+          print "RUN sh -c '\''mkdir -p /kaniko && chmod 777 /kaniko'\''";
+          next
+        }1' deploy/Dockerfile | sed -E 's|RUN busybox sh -c |RUN sh -c |' > deploy/Dockerfile.tmp && mv deploy/Dockerfile.tmp deploy/Dockerfile
         git add deploy/Dockerfile
         git diff --cached > ../goflags-fix.diff
-        git commit -m "Add GOFLAGS arg"
+        git commit -m "Add GOFLAGS arg and replace busybox with sh"
 
     - name: Build patched Kaniko image
       id: build-image
