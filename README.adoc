@@ -127,7 +127,7 @@ Default is `info`.
 | Data type
 | Description
 
-| `artifactIds`
+| `artifact-ids`
 | JSON string
 | The unique identifiers for each of the published image locations (`destination`) reported to the CloudBees platform, in JSON format.
 |===
@@ -167,7 +167,7 @@ The following example specifies optional inputs:
 
 === Using the action output
 
-Access the `artifactIds` values in downstream steps using the `outputs` xref:dsl-syntax:contexts.adoc[context].
+Access the `artifact-ids` values in downstream steps using the `outputs` xref:dsl-syntax:contexts.adoc[context].
 
 The following is the JSON format for the `artifactIds` ouput, where `<destination>` is the specified `destination` input parameter value, and `<artifact-version-id>` is the unique identifier of the artifact version.
 
@@ -178,7 +178,7 @@ The following is the JSON format for the `artifactIds` ouput, where `<destinatio
 }
 ----
 
-The following is an example of an `artifactIds` JSON for two artifact IDs:
+The following is an example of an `artifact-ids` JSON for two artifact IDs:
 
 [source,json,role="novalidate"]
 ----
@@ -188,7 +188,7 @@ The following is an example of an `artifactIds` JSON for two artifact IDs:
 }
 ----
 
-Use the `artifactIds` output as follows, where <action_step_ID> is the action step ID, and <destination_URL> is the destination URL:
+Use the `artifact-ids` output as follows, where <action_step_ID> is the action step ID, and <destination_URL> is the destination URL:
 
 * `${{ steps.<action_step_ID>.outputs.artifactIds }}` for a JSON string of all outputted artifact ID values.
 
@@ -247,8 +247,8 @@ jobs:
           DESTINATION1:  "${{ vars.DOCKER_REGISTRY }}/my-image:${{ cloudbees.version }}"
           DESTINATION2:  "${{ vars.DOCKER_REGISTRY }}/my-image-test:${{ cloudbees.version }}"
         run: |
-          echo "artifact ID for my-image:${{ cloudbees.version }}: '${{ env.DESTINATION1 }}': ${{ fromJSON(steps.kaniko-build.outputs.artifactIds)[env.DESTINATION1] }}"
-          echo "artifact ID for my-image-test:${{ cloudbees.version }}: '${{ env.DESTINATION2 }}': ${{ fromJSON(steps.kaniko-build.outputs.artifactIds)[env.DESTINATION2] }}"
+          echo "artifact ID for my-image:${{ cloudbees.version }}: '${{ env.DESTINATION1 }}': ${{ fromJSON(steps.kaniko-build.outputs.artifact-ids)[env.DESTINATION1] }}"
+          echo "artifact ID for my-image-test:${{ cloudbees.version }}: '${{ env.DESTINATION2 }}': ${{ fromJSON(steps.kaniko-build.outputs.artifact-ids)[env.DESTINATION2] }}"
 
 ----
 
