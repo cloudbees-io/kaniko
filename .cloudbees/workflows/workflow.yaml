@@ -42,9 +42,9 @@ jobs:
         # Add GOFLAGS after ARG TARGETOS
         sed -i '/^ARG TARGETOS/a ARG GOFLAGS="-buildvcs=false"' deploy/Dockerfile
         
-        # Override CMD to avoid busybox
-        echo 'CMD ["/bin/sh", "-c", "mkdir -p /kaniko && chmod 777 /kaniko"]' >> deploy/Dockerfile
-        
+        # Remove any CMD line containing busybox
+        sed -i '/CMD.*busybox/d' deploy/Dockerfile
+
         git add deploy/Dockerfile
         git diff --cached > ../goflags-fix.diff
         git commit -m "Add GOFLAGS arg"
