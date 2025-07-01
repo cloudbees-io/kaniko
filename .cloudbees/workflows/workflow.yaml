@@ -20,7 +20,7 @@ jobs:
       uses: cloudbees-io/checkout@v1
       with:
         repository: chainguard-dev/kaniko
-        path: kaniko-src-dir
+        path: kaniko-src
 
     - name: Login to AWS
       uses: cloudbees-io/configure-aws-credentials@v1
@@ -35,7 +35,7 @@ jobs:
     - name: Append GOFLAGS and generate diff
       uses: docker://golang:1.24.0
       run: |
-        cd kaniko-src-dir
+        cd kaniko-src
         git config user.name "ci"
         git config user.email "ci@example.com"
         echo 'ARG GOFLAGS="-buildvcs=false"' >> deploy/Dockerfile
