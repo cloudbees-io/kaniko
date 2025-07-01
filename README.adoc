@@ -192,7 +192,7 @@ Use the `artifact-ids` output as follows, where <action_step_ID> is the action s
 
 * `${{ steps.<action_step_ID>.outputs.artifactIds }}` for a JSON string of all outputted artifact ID values.
 
-* `${{ fromJSON(steps.<action_step_ID>.outputs.artifactIds).<artifact_version> }}` for a single artifact ID value.
+* `${{ fromJSON(steps.<action_step_ID>.outputs.artifactIds).<destination_URL> }}` for a single artifact ID value.
 
 === Full workflow example
 
