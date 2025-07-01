@@ -13,10 +13,14 @@ permissions:
 jobs:
   build-base-kaniko-image:
     steps:
-    - name: Get source code
-      uses: cloudbees-io/checkout@v1 
+    - name: Checkout this repo (for workflow, scripts, etc.)
+      uses: cloudbees-io/checkout@v1
+
+    - name: Checkout Kaniko upstream repo into subdir
+      uses: cloudbees-io/checkout@v1
       with:
         repository: chainguard-dev/kaniko
+        path: kaniko-src
 
     - name: Login to AWS
       uses: cloudbees-io/configure-aws-credentials@v1
@@ -28,22 +32,33 @@ jobs:
     - name: Configure container registry for ECR
       uses: cloudbees-io/configure-ecr-credentials@v1
 
-    - name: Applying Git Diff Patch
+    - name: Append GOFLAGS and generate diff
       uses: docker://golang:1.24.0
       run: |
-        git apply ./goflags-fix.diff
+        cd kaniko-src
+        echo 'ARG GOFLAGS="-buildvcs=false"' >> deploy/Dockerfile
+        git add deploy/Dockerfile
+        git commit -m "Add GOFLAGS arg"
+        git diff --cached > ../goflags-fix.diff
 
-    - name: Build image
+    - name: Apply Git Diff Patch
+      uses: docker://golang:1.24.0
+      run: |
+        cd kaniko-src
+        git apply ../goflags-fix.diff
+
+    - name: Build patched Kaniko image
       id: build-image
       uses: cloudbees-io/kaniko@v1
       with:
+        context: ./kaniko-src
+        dockerfile: deploy/Dockerfile
         destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/chainguard-dev-kaniko-base:${{ cloudbees.scm.sha }},020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/chainguard-dev-kaniko-base:latest
         labels: maintainer=sdp-pod-3,email=engineering@cloudbees.io
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
-        dockerfile: deploy/Dockerfile
         verbosity: debug
-        
-    - name: Run TruffleHog Container Action
+
+    - name: Run TruffleHog on base image
       uses: cloudbees-io/trufflehog-secret-scan-container@v1
       with:
         image-location: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/chainguard-dev-kaniko-base
