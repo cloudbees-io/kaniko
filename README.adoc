@@ -7,12 +7,12 @@ View build artifact information in *Build artifacts* of *Run details* and in *Ar
 
 == Prerequisites
 
-. To authenticate with the Docker registry, you must have a Docker config file in the `${HOME}/.docker/config.json` path.
-+
+To authenticate with the Docker registry, you must have a Docker config file in the `${HOME}/.docker/config.json` path.
+
 Use link:https://github.com/cloudbees-io/configure-oci-credentials[the OCI credentials configuration action] to generate a Docker config file, as in the following example.
-+
+
 In your YAML file, add:
-+
+
 [source,yaml]
 ----
 
@@ -26,27 +26,7 @@ In your YAML file, add:
 
 ----
 
-. The Docker config file must be formatted in JSON.
-To use the following example, replace:
-+
-* `<registry_host>` with your registry host URL.
-* `<username>` with your username.
-* `<password>` with your password.
-+
-NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
-+
-[source,json,role="novalidate"]
-----
-{
-	"auths": {
-		"<registry_host>": {
-			"username": "<username>",
-			"password": "<password>",
-			"auth": "<username>:<password>"
-		}
-	}
-}
-----
+The generated Docker config file is formatted in JSON.
 
 == Inputs
 
