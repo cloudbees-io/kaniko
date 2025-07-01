@@ -45,6 +45,9 @@ jobs:
         # Remove any CMD line containing busybox
         sed -i '/CMD.*busybox/d' deploy/Dockerfile
 
+        # Add safe final CMD
+        echo 'CMD ["/bin/sh", "-c", "echo noop"]' >> deploy/Dockerfile
+
         git add deploy/Dockerfile
         git diff --cached > ../goflags-fix.diff
         git commit -m "Add GOFLAGS arg"
