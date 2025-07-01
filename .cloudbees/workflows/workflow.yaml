@@ -31,7 +31,8 @@ jobs:
     - name: Applying Git Diff Patch
       uses: docker://golang:1.24.0
       run: |
-        git apply goflags-fix.diff
+        cd ${{ cloudbees.workspace }}
+        git apply .cloudbees/workflows/goflags-fix.diff
 
     - name: Build image
       id: build-image
