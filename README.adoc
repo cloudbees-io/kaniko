@@ -174,8 +174,7 @@ The following is the JSON format for the `artifactIds` ouput, where `<destinatio
 [source,json,role="novalidate"]
 ----
 {
-  "<destination>": "<artifact-version-id>",
-  ..
+  "<destination>": "<artifact-version-id>"
 }
 ----
 
@@ -202,7 +201,7 @@ The following workflow example:
 * Checks out source code from a repository.
 * Configures Docker credentials.
 * Builds and publishes a container image with Kaniko.
-* Prints the artifact IDs for both static and dynamically created destinations.
+* Prints the artifact IDs for dynamically created destinations.
 
 [source,yaml,role="default-expanded"]
 ----
