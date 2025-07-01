@@ -38,8 +38,7 @@ jobs:
         cd kaniko-src
         git config user.name "ci"
         git config user.email "ci@example.com"
-        awk '/^ARG TARGETOS$/ { print; print "ARG GOFLAGS=\"-buildvcs=false\""; next }1' deploy/Dockerfile > deploy/Dockerfile.tmp && mv deploy/Dockerfile.tmp deploy/Dockerfile
-        awk '/^RUN / && c==0 { print "RUN apk add --no-cache busybox"; c=1 }1' deploy/Dockerfile > deploy/Dockerfile.tmp && mv deploy/Dockerfile.tmp deploy/Dockerfile
+        awk '/^ARG TARGETOS$/ { print; print "ARG GOFLAGS=\"-buildvcs=false\""; next }1' Dockerfile > tmp && mv tmp Dockerfile
         git add deploy/Dockerfile
         git diff --cached > ../goflags-fix.diff
         git commit -m "Patch Dockerfile"
