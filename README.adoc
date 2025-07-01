@@ -183,7 +183,7 @@ The following is an example of an `artifact-ids` JSON for two artifact IDs:
 [source,json,role="novalidate"]
 ----
 {
-  "index.docker.io/example/my-docker:1.0.87": "1234abcd-56ef-gh78-9012-ijklmnop3456"
+  "index.docker.io/example/my-docker:1.0.87": "1234abcd-56ef-gh78-9012-ijklmnop3456",
   "index.docker.io/example/my-docker:1.0.87-dev": "ab34cd12-78gh-56ef-ij78-3456mnopkl90"
 }
 ----
