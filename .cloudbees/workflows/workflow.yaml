@@ -42,8 +42,8 @@ jobs:
         sed -i '/^ARG TARGETOS/a ARG GOFLAGS="-buildvcs=false"' deploy/Dockerfile
 
         # Remove lines containing busybox
-        # sed -i '/RUN.*busybox/d' deploy/Dockerfile
-        # sed -i '/CMD.*busybox/d' deploy/Dockerfile
+        sed -i '/RUN.*busybox/d' deploy/Dockerfile
+        sed -i '/CMD.*busybox/d' deploy/Dockerfile
 
         # Optionally commit changes if needed
         git config user.name "ci"
