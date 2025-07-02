@@ -194,12 +194,12 @@ func writeArtifactIdsAsOutput(value map[string]string) error {
 		return err
 	}
 
-	outputFile := filepath.Join(outputsDir, "artifactIds")
+	outputFile := filepath.Join(outputsDir, "artifact-ids")
 	err = os.WriteFile(outputFile, outputBytes, 0640)
 	if err != nil {
 		return fmt.Errorf("failed to write to %s: %w", outputFile, err)
 	}
-	fmt.Printf("Output parameter '%s' value %v written to %s\n", "artifactIds", value, outputFile)
+	fmt.Printf("Output parameter '%s' value %v written to %s\n", "artifact-ids", value, outputFile)
 	return nil
 }
 
