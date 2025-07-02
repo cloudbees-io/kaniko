@@ -33,25 +33,27 @@ jobs:
     - name: Configure container registry for ECR
       uses: cloudbees-io/configure-ecr-credentials@v1
 
-    - name: Append GOFLAGS and generate diff
+    - name: Append GOFLAGS and patch Dockerfile
       uses: docker://golang:1.24.0
       run: |
         cd kaniko-src
         git config user.name "ci"
         git config user.email "ci@example.com"
-        
-        # Add GOFLAGS after ARG TARGETOS
+
+        # Insert GOFLAGS after ARG TARGETOS
         sed -i '/^ARG TARGETOS/a ARG GOFLAGS="-buildvcs=false"' deploy/Dockerfile
-        
-        # Remove any CMD line containing busybox
+
+        # Remove all lines using busybox (RUN or CMD)
+        sed -i '/RUN.*busybox/d' deploy/Dockerfile
         sed -i '/CMD.*busybox/d' deploy/Dockerfile
 
-        # Add safe final CMD
+        # Add a safe default CMD
         echo 'CMD ["/bin/sh", "-c", "echo noop"]' >> deploy/Dockerfile
 
+        # Save diff and commit
         git add deploy/Dockerfile
         git diff --cached > ../goflags-fix.diff
-        git commit -m "Add GOFLAGS arg"
+        git commit -m "Add GOFLAGS and remove busybox RUN/CMD"
 
     - name: Build patched Kaniko image
       id: build-image
