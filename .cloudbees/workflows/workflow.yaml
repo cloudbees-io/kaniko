@@ -39,18 +39,7 @@ jobs:
         cd kaniko-src
         git config user.name "ci"
         git config user.email "ci@example.com"
-
-        # Insert GOFLAGS after ARG TARGETOS
-        sed -i '/^ARG TARGETOS/a ARG GOFLAGS="-buildvcs=false"' deploy/Dockerfile
-
-        # Remove all lines using busybox (RUN or CMD)
-        sed -i '/RUN.*busybox/d' deploy/Dockerfile
-        sed -i '/CMD.*busybox/d' deploy/Dockerfile
-
-        # Save diff and commit
-        git add deploy/Dockerfile
-        git diff --cached > ../goflags-fix.diff
-        git commit -m "Add GOFLAGS and remove busybox RUN/CMD"
+        git apply ../kaniko-fix.diff
 
     - name: Build patched Kaniko image
       id: build-image
