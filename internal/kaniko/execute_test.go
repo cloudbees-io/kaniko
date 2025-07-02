@@ -655,9 +655,9 @@ func Test_createArtifactInfo(t *testing.T) {
 		err = c.createArtifactInfo(destinations, "gcr.io/kaniko-project/executor:v1.6.0@sha256:cafebabebeef")
 		require.NoError(t, err)
 
-		v, err := os.ReadFile(filepath.Join(tmpDir, "artifactIds"))
-		require.NoError(t, err, "artifactIds")
-		require.Equal(t, `{"gcr.io/kaniko-project/executor:v1.6.0":"artifact UUID"}`, string(v), "artifactIds content")
+		v, err := os.ReadFile(filepath.Join(tmpDir, "artifact-ids"))
+		require.NoError(t, err, "artifact-ids")
+		require.Equal(t, `{"gcr.io/kaniko-project/executor:v1.6.0":"artifact UUID"}`, string(v), "artifact-ids content")
 	})
 
 	t.Run("create - Error", func(t *testing.T) {
