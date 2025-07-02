@@ -47,9 +47,6 @@ jobs:
         sed -i '/RUN.*busybox/d' deploy/Dockerfile
         sed -i '/CMD.*busybox/d' deploy/Dockerfile
 
-        # Add a safe default CMD
-        echo 'CMD ["/bin/sh", "-c", "echo noop"]' >> deploy/Dockerfile
-
         # Save diff and commit
         git add deploy/Dockerfile
         git diff --cached > ../goflags-fix.diff
