@@ -39,7 +39,9 @@ jobs:
         cd kaniko-src
         git config user.name "ci"
         git config user.email "ci@example.com"
-        git apply ../kaniko-fix.diff
+        git config --add safe.directory .
+        sed -i '/RUN go install github.com\/chrismellard\/docker-credential-acr-env/a RUN id && ls -la .' deploy/Dockerfile
+        #git apply ../kaniko-fix.diff
 
     - name: Build patched Kaniko image
       id: build-image
