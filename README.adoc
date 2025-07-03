@@ -2,7 +2,8 @@
 
 Use the Kaniko action to build images based upon a Dockerfile, then publish the image to a Docker registry.
 Kaniko builds images inside a container or Kubernetes cluster.
-This action also reports the image and tag names to the workflow run for artifact traceability purposes.
+This action also publishes the image and tag names to the platform for artifact traceability purposes. 
+View build artifact information in *Build artifacts* of *Run details* and in *Artifacts*.
 
 == Prerequisites
 
@@ -25,26 +26,11 @@ In your YAML file, add:
 
 ----
 
-The Docker config file must be formatted in JSON, as follows:
-
-[source,json,role="novalidate"]
-----
-{
-	"auths": {
-		"<registry host>": {
-			"username": "<username>",
-			"password": "<password>",
-			"auth": "<username>:<password>"
-		}
-	}
-}
-----
-
-NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
+The generated Docker config file is formatted in JSON.
 
 == Inputs
 
-[cols="2a,1a,1a,3a",options="header"]
+[cols="30%,15%,15%,40%",options="header"]
 .Input details
 |===
 
@@ -53,56 +39,67 @@ NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
 | Required?
 | Description
 
-| `dockerfile`
-| String
-| No
-| The path to the Dockerfile to be built. Default is `Dockerfile`.
-
-| `context`
-| String
-| No
-| The path to the build context. Default is `${{ cloudbees.workspace }}`.
-
 | `destination`
 | String
 | Yes
-| The target image to be published. Formatted as a CSV list, so you can pass multiple images.
-
-| `tar-path`
-| String
-| No
-| Full path including the filename where the image TAR file should be saved. This option allows saving the built image as a tarball.
+| The locations of the target images to be published.
+Formatted as a comma-separated list for passing multiple images.
 
 | `build-args`
 | String
 | No
-| The build arguments to be passed to the Kaniko build. Formatted as a CSV list, so you can pass multiple build arguments.
+| The build arguments to be passed to the Kaniko build.
+Formatted as a comma-separated list for passing multiple build arguments.
+
+| `context`
+| String
+| No
+| The path to the build context.
+Default is `${{ cloudbees.workspace }}`.
+
+| `dockerfile`
+| String
+| No
+| The path to the Dockerfile.
+Default is `Dockerfile`.
 
 | `labels`
 | String
 | No
-| The label metadata added to the final image. Formatted as a CSV list, so you can pass multiple labels.
+| The label metadata added to the final image.
+Formatted as a comma-separated list for passing multiple labels.
 
 | `registry-mirrors`
 | String
 | No
-| Registry mirror(s) to use for loading images. Formatted as a CSV list, so you can pass multiple registries.
+| Registry mirrors to use for loading images.
+Formatted as a comma-separated list for passing multiple registries.
 
 | `skip-default-registry-fallback`
+| Boolean
+| No
+| If set to `true`, fails build if `registry-mirrors` cannot pull the image.
+If `registry-mirrors` is empty, this flag is ignored.
+Default is `false`.
+
+| `tar-path`
 | String
 | No
-| If set, fails build if registry-mirrors cannot pull image. If registry-mirrors is empty, this flag is ignored. Accepts 'true' or 'false', default is 'false'.
+| Full path location where the image is to be saved, including the filename.
+To use this option, the image file must be in the TAR format.
 
 | `verbosity`
 | String
 | No
-| The verbosity of logging when running the Kaniko build. It can be one of: `panic`, `fatal`, `error`, `warn`, `info`, `debug`, `trace`. Default is `info`.
+| The verbosity of logging when running the Kaniko build.
+Accepted inputs are: `panic`, `fatal`, `error`, `warn`, `info`, `debug`, `trace`.
+Default is `info`.
 
 |===
 
-== Outputs
+== Output
 
-[cols="2a,1a,3a",options="header"]
+[cols="30%,20%,50%",options="header"]
 .Output details
 |===
 
@@ -111,48 +108,127 @@ NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
 | Description
 
 | `artifact-ids`
-| String
-| The output parameter for artifact IDs.
-
-These artifact IDs values can be accessed in subsequent steps using the outputs context. For example, to return:
-
-* All artifact ID values provided by action in JSON format use: `${{ steps.<action_step_name>.outputs.artifact-ids }}`.
-
-* A specific artifact ID value use: `${{ fromJSON(steps.<action_step_name>.outputs.artifact-ids).<destination URL>}}`.
-
-For instance kaniko action was used in the step with name "kaniko-build", and the destination URL is `registry.example.com/my-image:latest`, then you can access the artifact ID using:
-`${{ fromJSON(steps.kaniko-build.outputs.artifact-ids)['registry.example.com/my-image:latest'] }}`.
-
+| JSON string
+| The unique identifiers for each of the published image locations (`destination`) reported to the CloudBees platform, in JSON format.
 |===
 
-== Usage example
+== Usage examples
 
-In your YAML file, add:
+=== Basic example
+
+The following is a basic usage example for this action:
 
 [source,yaml]
 ----
-      - id: kaniko-build
-        name: Build a container image with Kaniko
+      - name: Build a container image with Kaniko
         uses: cloudbees-io/kaniko@v1
         with:
-          dockerfile: path/to/Dockerfile
-          context: .
-          destination: <registry host>/<image name>:${{cloudbees.version}},<registry host>/<image name>:latest
-          build-args: BUILDKIT_CONTEXT_KEEP_GIT_DIR=1,BUILDKIT_INLINE_CACHE=1
-          labels: maintainer=John Smith,version=${{cloudbees.version}}
-          verbosity: info
-          tar-path: path/to/save/image.tar
+          destination: path/to/registry/host/my-image:1.0.1,path/to/registry/host/my-image:latest
+----
 
-      - id: echo-artifact-ids
+=== Using optional inputs
+
+The following example specifies optional inputs:
+
+[source,yaml]
+----
+      - name: Kaniko build with optional inputs
+        uses: cloudbees-io/kaniko@v1
+        with:
+          destination: path/to/registry/host/my-image:1.0.1,path/to/registry/host/my-image:latest
+          build-args: BUILDKIT_CONTEXT_KEEP_GIT_DIR=1,BUILDKIT_INLINE_CACHE=1
+          context: .
+          dockerfile: path/to/Dockerfile
+          labels: maintainer=John Smith,version=1.0.1
+          tar-path: path/to/image.tar
+          verbosity: warn
+
+----
+
+=== Using the action output
+
+Access the `artifact-ids` values in downstream steps using the `outputs` link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/dsl-syntax/contexts[context].
+
+The following is the JSON format for the `artifact-ids` ouput, where `<destination>` is the specified `destination` input parameter value, and `<artifact-version-id>` is the unique identifier of the artifact version.
+
+[source,json,role="novalidate"]
+----
+{
+  "<destination>": "<artifact-version-id>"
+}
+----
+
+The following is an example of an `artifact-ids` JSON for two artifact IDs:
+
+[source,json,role="novalidate"]
+----
+{
+  "index.docker.io/example/my-docker:1.0.87": "1234abcd-56ef-gh78-9012-ijklmnop3456",
+  "index.docker.io/example/my-docker:1.0.87-dev": "ab34cd12-78gh-56ef-ij78-3456mnopkl90"
+}
+----
+
+Use the `artifact-ids` output as follows, where <action_step_ID> is the action step ID, and <destination_URL> is the destination URL:
+
+* `${{ steps.<action_step_ID>.outputs.artifact-ids }}` for a JSON string of all outputted artifact ID values.
+
+* `${{ fromJSON(steps.<action_step_ID>.outputs.artifact-ids).<destination_URL> }}` for a single artifact ID value.
+
+=== Full workflow example
+
+The following workflow example:
+
+* Checks out source code from a repository.
+* Configures Docker credentials.
+* Builds and publishes a container image with Kaniko.
+* Prints the artifact IDs for dynamically created destinations.
+
+[source,yaml,role="default-expanded"]
+----
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: workflow
+on:
+  push:
+    branches:
+      - "*"
+
+permissions:
+  scm-token-own: read
+  scm-token-org: read
+  id-token: read
+
+jobs:
+  build:
+    steps:
+      - name: Check out
+        uses: cloudbees-io/checkout@v1
+        with:
+          repository: my-name/my-repo-name
+      - name: Configure container registry credentials
+        id: dockerconfig
+        uses: cloudbees-io/configure-oci-credentials@v1
+        with:
+          registry: ${{ vars.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build with Kaniko
+        id: kaniko-build
+        uses: cloudbees-io/kaniko@v1
+        kind: build
+        with:
+          destination: ${{ vars.DOCKER_REGISTRY }}/my-image:${{ cloudbees.version }},${{ vars.DOCKER_REGISTRY }}/my-image-test:${{ cloudbees.version }}
+          dockerfile: my-dockerhub/docker/config.json
+      - name: Print output parameter artifact IDs from Kaniko action
+        id: echo-artifact-ids
         uses: docker://alpine:latest
-        name: Print output parameter artifact-ids from Kaniko action
         shell: sh
-        run: |
-          echo "artifact-ids output parameter values: ${{ steps.kaniko-build.outputs.artifact-ids }}"
-          echo "single artifact ID for the static destination '<registry host>/<image name>:latest': ${{ fromJSON(steps.kaniko-build.outputs.artifact-ids)['<registry host>/<image name>:latest'] }}"
-          echo "single artifact ID for the dynamically created destination '${{ env.DYNAMIC_DESTINATION }}': ${{ fromJSON(steps.kaniko-build.outputs.artifact-ids)[env.DYNAMIC_DESTINATION] }}"
         env:
-          DYNAMIC_DESTINATION:  "<registry host>/<image name>:-${{ cloudbees.version }}"
+          DESTINATION1:  "${{ vars.DOCKER_REGISTRY }}/my-image:${{ cloudbees.version }}"
+          DESTINATION2:  "${{ vars.DOCKER_REGISTRY }}/my-image-test:${{ cloudbees.version }}"
+        run: |
+          echo "artifact ID for my-image:${{ cloudbees.version }}: '${{ env.DESTINATION1 }}': ${{ fromJSON(steps.kaniko-build.outputs.artifact-ids)[env.DESTINATION1] }}"
+          echo "artifact ID for my-image-test:${{ cloudbees.version }}: '${{ env.DESTINATION2 }}': ${{ fromJSON(steps.kaniko-build.outputs.artifact-ids)[env.DESTINATION2] }}"
 
 ----
 
