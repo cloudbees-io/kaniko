@@ -13,7 +13,7 @@ permissions:
 jobs:
   build-base-kaniko-image:
     steps:
-    - name: Checkout this repo (for workflow, scripts, etc.)
+    - name: Checkout CloudBees Kaniko Repo
       uses: cloudbees-io/checkout@v1
 
     - name: Checkout Kaniko upstream repo into subdir
