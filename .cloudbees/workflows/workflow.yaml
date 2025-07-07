@@ -11,7 +11,19 @@ permissions:
   id-token: write
 
 jobs:
+  load-kaniko-image:
+    steps:
+      - name: Get source code
+        uses: cloudbees-io/checkout@v1
+
+      - name: Load kaniko-custom-build image from tar
+        uses: docker://docker:24.0.7
+        run: |
+          docker load -i .cloudbees/workflows/kaniko-custom-build.tar
+          docker tag $(docker images --format '{{.Repository}}:{{.Tag}}' | grep sraybee/kaniko-custom-build) ghcr.io/sraybee/kaniko-custom-build:latest
+
   build:
+    needs: [load-kaniko-image]
     steps:
     - name: Get source code
       uses: cloudbees-io/checkout@v1
