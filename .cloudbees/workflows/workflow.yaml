@@ -39,7 +39,6 @@ jobs:
         cd kaniko-src
         git config user.name "ci"
         git config user.email "ci@example.com"
-        git apply ../kaniko-fix.diff
         git config --add safe.directory .
 
     - name: Build patched Kaniko image
