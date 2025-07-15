@@ -1,14 +1,9 @@
-FROM alpine:3.22 AS build
+FROM alpine:3.21 AS build
 RUN echo test > /test-file
 
-FROM gcr.io/distroless/static:nonroot
+FROM docker.io/mgoltzsche/podman:5.4.0-minimal AS podman
+
+FROM scratch
 COPY --from=build /test-file /test-file
-COPY --from=build /bin/busybox /bin/busybox
-COPY --from=build /lib/ld-musl-* /lib/
-SHELL ["/bin/busybox", "sh", "-c"]
-USER root
-RUN set -ex; busybox mkdir /data; busybox chown nobody /data
-USER nobody
-RUN set -ex; [ "`busybox cat /test-file`" = test ]; echo test2 > /data/test-file2
-RUN [ "`busybox cat /data/test-file2`" = test2 ]
-ENTRYPOINT ["/bin/busybox", "sh"]
+COPY --from=podman /usr/local/bin/crun /usr/local/bin/crun
+ENTRYPOINT ["/usr/local/bin/crun"]
