@@ -1,5 +1,6 @@
 FROM alpine:3.22 AS build
 RUN echo test > /test-file
+RUN chmod +x /bin/busybox
 
 FROM gcr.io/distroless/static:nonroot
 COPY --from=build /test-file /test-file
