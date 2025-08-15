@@ -133,7 +133,7 @@ The default is `false`.
 | Data type
 | Description
 
-! `digest`
+| `digest`
 | String
 | Image digest (image ID)
 
