@@ -82,6 +82,11 @@ Formatted as a comma-separated list for passing multiple registries.
 If `registry-mirrors` is empty, this flag is ignored.
 Default is `false`.
 
+| `target`
+| String
+| No
+| Build a specific target stage in a multi-stage Dockerfile.
+
 | `tar-path`
 | String
 | No
@@ -95,6 +100,27 @@ To use this option, the image file must be in the TAR format.
 Accepted inputs are: `panic`, `fatal`, `error`, `warn`, `info`, `debug`, `trace`.
 Default is `info`.
 
+| `commit`
+| String
+| No
+| The commit ID from the source repository.
+
+| `repository-url`
+| String
+| No
+| The clone URL of the repository.
+
+| `ref`
+| String
+| No
+| The ref or branch of the checked-out repository.
+
+| `no-commit`
+| Boolean
+| No
+| If a commit is not supplied and no-commit is set to 'true', the action will not use the default commit ID from the workflow.
+The default is `false`.
+
 |===
 
 == Output
@@ -106,6 +132,30 @@ Default is `info`.
 | Output name
 | Data type
 | Description
+
+! `digest`
+| String
+| Image digest (image ID)
+
+| `tag`
+| String
+| Tag of the first pushed image
+
+| `tag-digest`
+| String
+| Tag of the first specified destination along with the image digest.
+Please note that this format is not part of the OCI standard but supported by most container tools.
+Tools loading such an image reference ignore the tag but perform the lookup based on the image repository and digest only.
+The tag only serves as a hint for humans.
+Using this format guarantees that the image is continued to be used even when the tag was overwritten and prevents stale image caches on different nodes.
+
+| `image`
+| String
+| Image reference of the first specified destination, including the image digest.
+Please note that this image reference format is not part of the OCI standard but supported by most container tools.
+Tools loading such an image reference ignore the tag but perform the lookup based on the image repository and digest only.
+The tag only serves as a hint for humans.
+Using this image reference format guarantees that the image is continued to be used even when the tag was overwritten and prevents stale image caches on different nodes.
 
 | `artifact-ids`
 | JSON string

@@ -246,14 +246,32 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, imageRef, runId, ru
 			imageDigest = after
 		}
 	}
+
+	commit := ""
+	repositoryURL := ""
+	inputRef := ""
+	if os.Getenv("INPUT_COMMIT") != "" {
+		commit = os.Getenv("INPUT_COMMIT")
+		repositoryURL = os.Getenv("INPUT_REPOSITORY_URL")
+		inputRef = os.Getenv("INPUT_REF")
+	}
+	noCommit := false
+	if os.Getenv("INPUT_NO_COMMIT") == "true" {
+		noCommit = true
+	}
+
 	artInfo := CreateArtifactInfoMap{
-		"runId":       runId,
-		"run_attempt": runAttempt,
-		"name":        imgName,
-		"version":     imgVer,
-		"url":         destination,
-		"type":        "docker",
-		"digest":      imageDigest,
+		"runId":                 runId,
+		"run_attempt":           runAttempt,
+		"name":                  imgName,
+		"version":               imgVer,
+		"url":                   destination,
+		"type":                  "docker",
+		"digest":                imageDigest,
+		"commit.commit":         commit,
+		"commit.repository_url": repositoryURL,
+		"commit.ref":            inputRef,
+		"ignore_default_commit": noCommit,
 	}
 
 	return artInfo, nil
