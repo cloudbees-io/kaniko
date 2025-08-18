@@ -48,6 +48,20 @@ inputs:
     default: info
     description: >
       Log level verbosity - panic, fatal, error, warn, info, debug, trace
+  commit:
+    description:
+      The commit ID from the source repository.
+  repository-url:
+    description: >
+      The clone URL of the repository.
+  ref:
+    description: >
+      The ref or branch of the checked-out repository.
+  no-commit:
+    description: >
+      If a commit is not supplied and no-commit is set, the action will not use the default commit ID from the workflow.
+      Type: Boolean
+    default: 'false'
 
 outputs:
   digest:
@@ -103,3 +117,7 @@ runs:
         CLOUDBEES_API_TOKEN: ${{ cloudbees.api.token }}
         CLOUDBEES_RUN_ID: ${{ cloudbees.run_id }}
         CLOUDBEES_RUN_ATTEMPT: ${{ cloudbees.run_attempt }}
+        INPUT_REPOSITORY_URL: ${{ inputs.repository-url }}
+        INPUT_COMMIT: ${{ inputs.commit }}
+        INPUT_REF: ${{ inputs.ref }}
+        INPUT_NO_COMMIT: ${{ inputs.no-commit }}
