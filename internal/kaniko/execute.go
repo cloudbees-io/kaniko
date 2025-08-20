@@ -259,21 +259,25 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, imageRef, runId, ru
 	if os.Getenv("INPUT_NO_COMMIT") == "true" {
 		noCommit = true
 	}
-	commitMap := map[string]string{
-		"commit_id":      commit,
-		"repository_url": repositoryURL,
-		"ref":            inputRef,
-	}
+	//	commitMap := map[string]string{
+	//		"commit_id":      commit,
+	//		"repository_url": repositoryURL,
+	//		"ref":            inputRef,
+	//}
 
 	artInfo := CreateArtifactInfoMap{
-		"runId":                 runId,
-		"run_attempt":           runAttempt,
-		"name":                  imgName,
-		"version":               imgVer,
-		"url":                   destination,
-		"type":                  "docker",
-		"digest":                imageDigest,
-		"commit":                commitMap,
+		"runId":       runId,
+		"run_attempt": runAttempt,
+		"name":        imgName,
+		"version":     imgVer,
+		"url":         destination,
+		"type":        "docker",
+		"digest":      imageDigest,
+		"commit": map[string]string{
+			"commit_id":      commit,
+			"repository_url": repositoryURL,
+			"ref":            inputRef,
+		},
 		"ignore_default_commit": noCommit,
 	}
 
