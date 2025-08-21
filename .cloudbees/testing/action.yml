@@ -53,14 +53,14 @@ inputs:
       The commit ID from the source repository. It is used when registering the build artifact in the CloudBees platform.
   repository-url:
     description: >
-      The clone URL of the repository. it is used when registering the build artifact in the CloudBees platform.
+      The clone URL of the source repository. It is used when registering the build artifact in the CloudBees platform.
   ref:
     description: >
-      The ref or branch of the checked-out repository. It is used when registering the build artifact in the CloudBees platform.
+      The ref or branch of the source repository. It is used when registering the build artifact in the CloudBees platform.
   no-commit:
     description: >
-      If a commit is not supplied and no-commit is set to true, the action will not use the default commit ID from the workflow.
-      The commit details will be empty when registering the build artifact in the CloudBees platform.
+      If `commit` is not supplied and `no-commit: false` is specified, the default commit ID from the workflow will be used when registering the artifact.
+      If a commit is not supplied and `no-commit: true` is specified, the action does *not* use the default commit ID from the workflow.
       Type: Boolean
     default: 'false'
 

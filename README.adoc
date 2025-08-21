@@ -5,6 +5,12 @@ Kaniko builds images inside a container or Kubernetes cluster.
 This action also publishes the image and tag names to the platform for artifact traceability purposes. 
 View build artifact information in *Build artifacts* of *Run details* and in *Artifacts*.
 
+== Automatic artifact data reporting
+
+This action link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/workflows/artifacts[reports artifact-related data] to the workflow run for artifact traceability purposes.
+
+Do not include the link:https://github.com/cloudbees-io/register-build-artifact[`register-build-artifact` action] for the same artifact version, as the resulting run would register duplicate artifact entries to CloudBees platform.
+
 == Prerequisites
 
 To authenticate with the Docker registry, you must have a Docker config file in the `${HOME}/.docker/config.json` path.
@@ -103,22 +109,23 @@ Default is `info`.
 | `commit`
 | String
 | No
-| The commit ID from the source repository.
+| The commit ID from the source repository. It is used when registering the build artifact in the CloudBees platform.
 
 | `repository-url`
 | String
 | No
-| The clone URL of the repository.
+| The clone URL of the source repository. It is used when registering the build artifact in the CloudBees platform.
 
 | `ref`
 | String
 | No
-| The ref or branch of the checked-out repository.
+| The ref or branch of the source repository. It is used when registering the build artifact in the CloudBees platform.
 
 | `no-commit`
 | Boolean
 | No
-| If a commit is not supplied and no-commit is set to 'true', the action will not use the default commit ID from the workflow.
+| If `commit` is not supplied and `no-commit: false` is specified, the default commit ID from the workflow will be used when registering the artifact.
+If a commit is not supplied and `no-commit: true` is specified, the action does *not* use the default commit ID from the workflow.
 The default is `false`.
 
 |===
@@ -135,27 +142,23 @@ The default is `false`.
 
 | `digest`
 | String
-| Image digest (image ID)
+| The image digest.
 
 | `tag`
 | String
-| Tag of the first pushed image
+| The tag of the first pushed image.
 
 | `tag-digest`
 | String
-| Tag of the first specified destination along with the image digest.
-Please note that this format is not part of the OCI standard but supported by most container tools.
-Tools loading such an image reference ignore the tag but perform the lookup based on the image repository and digest only.
-The tag only serves as a hint for humans.
-Using this format guarantees that the image is continued to be used even when the tag was overwritten and prevents stale image caches on different nodes.
+| The tag of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
+Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
+Use this format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
 
 | `image`
 | String
-| Image reference of the first specified destination, including the image digest.
-Please note that this image reference format is not part of the OCI standard but supported by most container tools.
-Tools loading such an image reference ignore the tag but perform the lookup based on the image repository and digest only.
-The tag only serves as a hint for humans.
-Using this image reference format guarantees that the image is continued to be used even when the tag was overwritten and prevents stale image caches on different nodes.
+| Image reference of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
+Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
+Use this image reference format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
 
 | `artifact-ids`
 | JSON string
@@ -290,4 +293,4 @@ link:https://opensource.org/license/mit/[MIT license].
 == References
 
 * Learn more about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/actions[using actions in CloudBees workflows].
-* Learn about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/[the CloudBees platform].
+* Learn about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/[CloudBees platform].
