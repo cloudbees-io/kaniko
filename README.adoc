@@ -57,6 +57,28 @@ Formatted as a comma-separated list for passing multiple images.
 | The build arguments to be passed to the Kaniko build.
 Formatted as a comma-separated list for passing multiple build arguments.
 
+| `repository-url`
+| String
+| No
+| The clone URL of the source repository.
+
+| `ref`
+| String
+| No
+| The ref or branch of the source repository.
+
+| `commit`
+| String
+| No
+| The commit ID from the source repository.
+
+| `no-commit`
+| Boolean
+| No
+| If `commit` is not supplied and `no-commit: false` is specified, the action uses the default commit ID from the workflow.
+If a commit is not supplied and `no-commit: true` is specified, the action does *not* use the default commit ID from the workflow.
+The default is `false`.
+
 | `context`
 | String
 | No
@@ -116,6 +138,28 @@ Default is `info`.
 | `artifact-ids`
 | JSON string
 | The unique identifiers for each of the published image locations (`destination`) reported to CloudBees platform, in JSON format.
+
+| `digest`
+| String
+| The image digest.
+
+| `tag`
+| String
+| The tag of the first pushed image.
+
+| `tag-digest`
+| String
+| The tag of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
+Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
+Use this format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
+
+| `image`
+| String 
+| Image reference of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
+Please note that this image reference format is not part of the OCI standard but supported by most container tools.
+Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
+Use this image reference format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
+
 |===
 
 == Usage examples
