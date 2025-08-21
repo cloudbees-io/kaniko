@@ -508,23 +508,7 @@ func Test_buildCreateArtifactInfoRequest(t *testing.T) {
 		require.Equal(t, "17564567-e89b-12d3-a456-426614174000", commit["commit_id"])
 		require.Equal(t, "https://github.com/cloudbees-io/kaniko", commit["repository_url"])
 		require.Equal(t, "main", commit["ref"])
-		require.Equal(t, false, artInfo["ignore_default_commit"])
 	})
-	t.Run("success - no commit true", func(t *testing.T) {
-		var c = Config{}
-		setOSEnv()
-		os.Setenv("INPUT_NO_COMMIT", "true")
-		destination := "ubuntu"
-
-		artInfo, err := c.buildCreateArtifactInfoRequest(destination, "ubuntu:latest@sha256:cafebabebeef", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		require.Nil(t, err)
-		require.NotNil(t, artInfo)
-		require.Equal(t, "ubuntu", artInfo["name"])
-		require.Equal(t, "latest", artInfo["version"])
-		require.Equal(t, "sha256:cafebabebeef", artInfo["digest"])
-		require.Equal(t, true, artInfo["ignore_default_commit"])
-	})
-
 }
 
 func setOSEnv() {

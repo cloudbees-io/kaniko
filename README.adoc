@@ -109,24 +109,20 @@ Default is `info`.
 | `commit`
 | String
 | No
-| The commit ID from the source repository. It is used when registering the build artifact in the CloudBees platform.
+| The commit ID from the source repository, used when registering the build artifact in the CloudBees platform.
+Default is `${{ cloudbees.scm.sha }}`.
 
 | `repository-url`
 | String
 | No
-| The clone URL of the source repository. It is used when registering the build artifact in the CloudBees platform.
+| The clone URL of the source repository, used when registering the build artifact in the CloudBees platform.
+Default is `${{ cloudbees.scm.repositoryUrl }}`.
 
 | `ref`
 | String
 | No
-| The ref or branch of the source repository. It is used when registering the build artifact in the CloudBees platform.
-
-| `no-commit`
-| Boolean
-| No
-| If `commit` is not supplied and `no-commit: false` is specified, the default commit ID from the workflow will be used when registering the artifact.
-If a commit is not supplied and `no-commit: true` is specified, the action does *not* use the default commit ID from the workflow.
-The default is `false`.
+| The ref or branch of the source repository, used when registering the build artifact in the CloudBees platform.
+Default is `${{ cloudbees.scm.ref }}`.
 
 |===
 

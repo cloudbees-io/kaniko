@@ -247,18 +247,9 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, imageRef, runId, ru
 		}
 	}
 
-	commit := ""
-	repositoryURL := ""
-	inputRef := ""
-	if os.Getenv("INPUT_COMMIT") != "" {
-		commit = os.Getenv("INPUT_COMMIT")
-		repositoryURL = os.Getenv("INPUT_REPOSITORY_URL")
-		inputRef = os.Getenv("INPUT_REF")
-	}
-	noCommit := false
-	if os.Getenv("INPUT_NO_COMMIT") == "true" {
-		noCommit = true
-	}
+	commit := os.Getenv("INPUT_COMMIT")
+	repositoryURL := os.Getenv("INPUT_REPOSITORY_URL")
+	inputRef := os.Getenv("INPUT_REF")
 
 	artInfo := CreateArtifactInfoMap{
 		"runId":       runId,
@@ -273,7 +264,6 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, imageRef, runId, ru
 			"repository_url": repositoryURL,
 			"ref":            inputRef,
 		},
-		"ignore_default_commit": noCommit,
 	}
 
 	return artInfo, nil

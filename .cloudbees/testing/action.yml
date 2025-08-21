@@ -50,19 +50,16 @@ inputs:
       Log level verbosity - panic, fatal, error, warn, info, debug, trace
   commit:
     description:
-      The commit ID from the source repository. It is used when registering the build artifact in the CloudBees platform.
+      The commit ID from the source repository, used when registering the build artifact in the CloudBees platform.
+    default: ${{ cloudbees.scm.sha }}
   repository-url:
     description: >
-      The clone URL of the source repository. It is used when registering the build artifact in the CloudBees platform.
+      The clone URL of the source repository, used when registering the build artifact in the CloudBees platform.
+    default: ${{ cloudbees.scm.repositoryUrl }}
   ref:
     description: >
-      The ref or branch of the source repository. It is used when registering the build artifact in the CloudBees platform.
-  no-commit:
-    description: >
-      If `commit` is not supplied and `no-commit: false` is specified, the default commit ID from the workflow will be used when registering the artifact.
-      If a commit is not supplied and `no-commit: true` is specified, the action does *not* use the default commit ID from the workflow.
-      Type: Boolean
-    default: 'false'
+      The ref or branch of the source repository, used when registering the build artifact in the CloudBees platform.
+    default: ${{ cloudbees.scm.ref }}
 
 outputs:
   digest:
@@ -121,4 +118,3 @@ runs:
         INPUT_REPOSITORY_URL: ${{ inputs.repository-url }}
         INPUT_COMMIT: ${{ inputs.commit }}
         INPUT_REF: ${{ inputs.ref }}
-        INPUT_NO_COMMIT: ${{ inputs.no-commit }}
