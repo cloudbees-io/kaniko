@@ -50,16 +50,17 @@ inputs:
       Log level verbosity - panic, fatal, error, warn, info, debug, trace
   commit:
     description:
-      The commit ID from the source repository.
+      The commit ID from the source repository. It is used when registering the build artifact in the CloudBees platform.
   repository-url:
     description: >
-      The clone URL of the repository.
+      The clone URL of the repository. it is used when registering the build artifact in the CloudBees platform.
   ref:
     description: >
-      The ref or branch of the checked-out repository.
+      The ref or branch of the checked-out repository. It is used when registering the build artifact in the CloudBees platform.
   no-commit:
     description: >
-      If a commit is not supplied and no-commit is set, the action will not use the default commit ID from the workflow.
+      If a commit is not supplied and no-commit is set to true, the action will not use the default commit ID from the workflow.
+      The commit details will be empty when registering the build artifact in the CloudBees platform.
       Type: Boolean
     default: 'false'
 
