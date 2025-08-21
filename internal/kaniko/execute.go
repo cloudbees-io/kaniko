@@ -259,11 +259,6 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, imageRef, runId, ru
 	if os.Getenv("INPUT_NO_COMMIT") == "true" {
 		noCommit = true
 	}
-	//	commitMap := map[string]string{
-	//		"commit_id":      commit,
-	//		"repository_url": repositoryURL,
-	//		"ref":            inputRef,
-	//}
 
 	artInfo := CreateArtifactInfoMap{
 		"runId":       runId,
