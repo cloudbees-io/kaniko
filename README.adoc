@@ -57,28 +57,6 @@ Formatted as a comma-separated list for passing multiple images.
 | The build arguments to be passed to the Kaniko build.
 Formatted as a comma-separated list for passing multiple build arguments.
 
-| `repository-url`
-| String
-| No
-| The clone URL of the source repository.
-
-| `ref`
-| String
-| No
-| The ref or branch of the source repository.
-
-| `commit`
-| String
-| No
-| The commit ID from the source repository.
-
-| `no-commit`
-| Boolean
-| No
-| If `commit` is not supplied and `no-commit: false` is specified, the action uses the default commit ID from the workflow.
-If a commit is not supplied and `no-commit: true` is specified, the action does *not* use the default commit ID from the workflow.
-The default is `false`.
-
 | `context`
 | String
 | No
@@ -123,6 +101,24 @@ To use this option, the image file must be in the TAR format.
 Accepted inputs are: `panic`, `fatal`, `error`, `warn`, `info`, `debug`, `trace`.
 Default is `info`.
 
+| `commit`
+| String
+| No
+| The commit ID from the source repository, used when registering the build artifact in CloudBees platform.
+Default is `${{ cloudbees.scm.sha }}`.
+
+| `repository-url`
+| String
+| No
+| The clone URL of the source repository, used when registering the build artifact in CloudBees platform.
+Default is `${{ cloudbees.scm.repositoryUrl }}`.
+
+| `ref`
+| String
+| No
+| The ref or branch of the source repository, used when registering the build artifact in CloudBees platform.
+Default is `${{ cloudbees.scm.ref }}`.
+
 |===
 
 == Output
@@ -156,7 +152,6 @@ Use this format to guarantee that the same image is used even if the tag has bee
 | `image`
 | String 
 | Image reference of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
-Please note that this image reference format is not part of the OCI standard but supported by most container tools.
 Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
 Use this image reference format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
 
