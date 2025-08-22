@@ -5,6 +5,12 @@ Kaniko builds images inside a container or Kubernetes cluster.
 This action also publishes the image and tag names to the platform for artifact traceability purposes. 
 View build artifact information in *Build artifacts* of *Run details* and in *Artifacts*.
 
+== Automatic artifact data reporting
+
+This action link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/workflows/artifacts[reports artifact-related data] to the workflow run for artifact traceability purposes.
+
+Do not include the link:https://github.com/cloudbees-io/register-build-artifact[`register-build-artifact` action] for the same artifact version, as the resulting run would register duplicate artifact entries to CloudBees platform.
+
 == Prerequisites
 
 To authenticate with the Docker registry, you must have a Docker config file in the `${HOME}/.docker/config.json` path.
@@ -95,6 +101,24 @@ To use this option, the image file must be in the TAR format.
 Accepted inputs are: `panic`, `fatal`, `error`, `warn`, `info`, `debug`, `trace`.
 Default is `info`.
 
+| `commit`
+| String
+| No
+| The commit ID from the source repository, used when registering the build artifact in CloudBees platform.
+Default is `${{ cloudbees.scm.sha }}`.
+
+| `repository-url`
+| String
+| No
+| The clone URL of the source repository, used when registering the build artifact in CloudBees platform.
+Default is `${{ cloudbees.scm.repositoryUrl }}`.
+
+| `ref`
+| String
+| No
+| The ref or branch of the source repository, used when registering the build artifact in CloudBees platform.
+Default is `${{ cloudbees.scm.ref }}`.
+
 |===
 
 == Output
@@ -109,7 +133,28 @@ Default is `info`.
 
 | `artifact-ids`
 | JSON string
-| The unique identifiers for each of the published image locations (`destination`) reported to the CloudBees platform, in JSON format.
+| The unique identifiers for each of the published image locations (`destination`) reported to CloudBees platform, in JSON format.
+
+| `digest`
+| String
+| The image digest.
+
+| `tag`
+| String
+| The tag of the first pushed image.
+
+| `tag-digest`
+| String
+| The tag of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
+Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
+Use this format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
+
+| `image`
+| String 
+| Image reference of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
+Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
+Use this image reference format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
+
 |===
 
 == Usage examples
@@ -240,4 +285,4 @@ link:https://opensource.org/license/mit/[MIT license].
 == References
 
 * Learn more about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/actions[using actions in CloudBees workflows].
-* Learn about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/[the CloudBees platform].
+* Learn about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/[CloudBees platform].
