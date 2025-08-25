@@ -109,19 +109,19 @@ Default is `info`.
 | `commit`
 | String
 | No
-| The commit ID from the source repository, used when registering the build artifact in the CloudBees platform.
+| The commit ID from the source repository, used when registering the build artifact in CloudBees platform.
 Default is `${{ cloudbees.scm.sha }}`.
 
 | `repository-url`
 | String
 | No
-| The clone URL of the source repository, used when registering the build artifact in the CloudBees platform.
+| The clone URL of the source repository, used when registering the build artifact in CloudBees platform.
 Default is `${{ cloudbees.scm.repositoryUrl }}`.
 
 | `ref`
 | String
 | No
-| The ref or branch of the source repository, used when registering the build artifact in the CloudBees platform.
+| The ref or branch of the source repository, used when registering the build artifact in CloudBees platform.
 Default is `${{ cloudbees.scm.ref }}`.
 
 |===
@@ -158,7 +158,28 @@ Use this image reference format to guarantee that the same image is used even if
 
 | `artifact-ids`
 | JSON string
-| The unique identifiers for each of the published image locations (`destination`) reported to the CloudBees platform, in JSON format.
+| The unique identifiers for each of the published image locations (`destination`) reported to CloudBees platform, in JSON format.
+
+| `digest`
+| String
+| The image digest.
+
+| `tag`
+| String
+| The tag of the first pushed image.
+
+| `tag-digest`
+| String
+| The tag of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
+Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
+Use this format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
+
+| `image`
+| String 
+| Image reference of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
+Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
+Use this image reference format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
+
 |===
 
 == Usage examples
