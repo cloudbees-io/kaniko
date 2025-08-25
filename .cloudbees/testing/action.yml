@@ -50,15 +50,15 @@ inputs:
       Log level verbosity - panic, fatal, error, warn, info, debug, trace
   commit:
     description:
-      The commit ID from the source repository, used when registering the build artifact in the CloudBees platform.
+      The commit ID from the source repository, used when registering the build artifact in CloudBees platform.
     default: ${{ cloudbees.scm.sha }}
   repository-url:
     description: >
-      The clone URL of the source repository, used when registering the build artifact in the CloudBees platform.
+      The clone URL of the source repository, used when registering the build artifact in CloudBees platform.
     default: ${{ cloudbees.scm.repositoryUrl }}
   ref:
     description: >
-      The ref or branch of the source repository, used when registering the build artifact in the CloudBees platform.
+      The ref or branch of the source repository, used when registering the build artifact in CloudBees platform.
     default: ${{ cloudbees.scm.ref }}
 
 outputs:
