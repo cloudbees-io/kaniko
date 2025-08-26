@@ -246,6 +246,11 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, imageRef, runId, ru
 			imageDigest = after
 		}
 	}
+
+	commit := os.Getenv("INPUT_COMMIT")
+	repositoryURL := os.Getenv("INPUT_REPOSITORY_URL")
+	inputRef := os.Getenv("INPUT_REF")
+
 	artInfo := CreateArtifactInfoMap{
 		"runId":       runId,
 		"run_attempt": runAttempt,
@@ -254,6 +259,11 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, imageRef, runId, ru
 		"url":         destination,
 		"type":        "docker",
 		"digest":      imageDigest,
+		"commit": map[string]string{
+			"commit_id":      commit,
+			"repository_url": repositoryURL,
+			"ref":            inputRef,
+		},
 	}
 
 	return artInfo, nil

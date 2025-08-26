@@ -88,6 +88,11 @@ Formatted as a comma-separated list for passing multiple registries.
 If `registry-mirrors` is empty, this flag is ignored.
 Default is `false`.
 
+| `target`
+| String
+| No
+| Build a specific target stage in a multi-stage Dockerfile.
+
 | `tar-path`
 | String
 | No
@@ -130,6 +135,26 @@ Default is `${{ cloudbees.scm.ref }}`.
 | Output name
 | Data type
 | Description
+
+| `digest`
+| String
+| The image digest.
+
+| `tag`
+| String
+| The tag of the first pushed image.
+
+| `tag-digest`
+| String
+| The tag of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
+Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
+Use this format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
+
+| `image`
+| String
+| Image reference of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
+Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
+Use this image reference format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
 
 | `artifact-ids`
 | JSON string

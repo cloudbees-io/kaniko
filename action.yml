@@ -48,6 +48,18 @@ inputs:
     default: info
     description: >
       Log level verbosity - panic, fatal, error, warn, info, debug, trace
+  commit:
+    description:
+      The commit ID from the source repository, used when registering the build artifact in CloudBees platform.
+    default: ${{ cloudbees.scm.sha }}
+  repository-url:
+    description: >
+      The clone URL of the source repository, used when registering the build artifact in CloudBees platform.
+    default: ${{ cloudbees.scm.repositoryUrl }}
+  ref:
+    description: >
+      The ref or branch of the source repository, used when registering the build artifact in CloudBees platform.
+    default: ${{ cloudbees.scm.ref }}
 
 outputs:
   digest:
@@ -103,3 +115,6 @@ runs:
         CLOUDBEES_API_TOKEN: ${{ cloudbees.api.token }}
         CLOUDBEES_RUN_ID: ${{ cloudbees.run_id }}
         CLOUDBEES_RUN_ATTEMPT: ${{ cloudbees.run_attempt }}
+        INPUT_REPOSITORY_URL: ${{ inputs.repository-url }}
+        INPUT_COMMIT: ${{ inputs.commit }}
+        INPUT_REF: ${{ inputs.ref }}

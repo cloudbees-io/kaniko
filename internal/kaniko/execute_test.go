@@ -492,7 +492,23 @@ func Test_buildCreateArtifactInfoRequest(t *testing.T) {
 		require.Equal(t, "a0cb1b7ee330e2f1ecf0e7bb974e167f30c0bce6", artInfo["version"])
 		require.Equal(t, "sha256:cafebabebeef", artInfo["digest"])
 	})
+	t.Run("success - commit provided", func(t *testing.T) {
+		var c = Config{}
+		setOSEnv()
+		setCommitEnv()
+		destination := "ubuntu"
 
+		artInfo, err := c.buildCreateArtifactInfoRequest(destination, "ubuntu:latest@sha256:cafebabebeef", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
+		commit := artInfo["commit"].(map[string]string)
+		require.Nil(t, err)
+		require.NotNil(t, artInfo)
+		require.Equal(t, "ubuntu", artInfo["name"])
+		require.Equal(t, "latest", artInfo["version"])
+		require.Equal(t, "sha256:cafebabebeef", artInfo["digest"])
+		require.Equal(t, "17564567-e89b-12d3-a456-426614174000", commit["commit_id"])
+		require.Equal(t, "https://github.com/cloudbees-io/kaniko", commit["repository_url"])
+		require.Equal(t, "main", commit["ref"])
+	})
 }
 
 func setOSEnv() {
@@ -500,6 +516,12 @@ func setOSEnv() {
 	os.Setenv("CLOUDBEES_API_TOKEN", "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUI")
 	os.Setenv("CLOUDBEES_RUN_ID", "123e4567-e89b-12d3-a456-426614174000")
 	os.Setenv("CLOUDBEES_RUN_ATTEMPT", "1")
+}
+
+func setCommitEnv() {
+	os.Setenv("INPUT_COMMIT", "17564567-e89b-12d3-a456-426614174000")
+	os.Setenv("INPUT_REPOSITORY_URL", "https://github.com/cloudbees-io/kaniko")
+	os.Setenv("INPUT_REF", "main")
 }
 
 type MockHTTPClient struct {
