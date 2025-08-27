@@ -97,7 +97,7 @@ func (k *Config) createArtifactInfo(destinations []string, imageRef string) erro
 		return fmt.Errorf("missing CLOUDBEES_API_TOKEN environment variable")
 	}
 
-	requestURL, err := url.JoinPath(apiUrl, "/v2/workflows/runs/artifactinfos")
+	requestURL, err := url.JoinPath(apiUrl, "/v3/artifactinfos")
 	if err != nil {
 		return err
 	}
