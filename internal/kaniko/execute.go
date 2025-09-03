@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/cloudbees-io/registry-config/pkg/registries"
 	"github.com/distribution/reference"
@@ -72,7 +73,7 @@ func (k *Config) Run(ctx context.Context) (err error) {
 	destinations := k.processDestinations()
 	err = k.createArtifactInfo(destinations, imageRef)
 	if err != nil {
-		log.Printf("WARN: failed to save artifact information: %v", err)
+		return fmt.Errorf("failed to save artifact information: %v", err)
 	}
 	return nil
 }
@@ -142,7 +143,17 @@ func (k *Config) createArtifactInfo(destinations []string, imageRef string) erro
 		apiReq.Header.Set("Content-Type", "application/json")
 		apiReq.Header.Set("Accept", "application/json")
 
-		resp, err := k.client.Do(apiReq)
+		maxRetries := 3
+		retryDelay := 5 * time.Second
+
+		var resp *http.Response
+		for i := 0; i < maxRetries; i++ {
+			resp, err = k.client.Do(apiReq)
+			if err == nil {
+				break
+			}
+			time.Sleep(retryDelay)
+		}
 		if err != nil {
 			return err
 		}
