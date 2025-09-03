@@ -91,7 +91,7 @@ Default is `false`.
 | `target`
 | String
 | No
-| Build a specific target stage in a multi-stage Dockerfile.
+| Specify a target stage to build when using a multi-stage Dockerfile.
 
 | `tar-path`
 | String
