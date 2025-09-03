@@ -108,23 +108,27 @@ Default is `info`.
 
 | `commit`
 | String
-| No
+| Only required if a different repository/branch.^<<footnote,[1]>>^
 | The commit ID from the source repository, used when registering the build artifact in CloudBees platform.
 Default is `${{ cloudbees.scm.sha }}`.
 
 | `repository-url`
 | String
-| No
+| Only required if a different repository/branch.^<<footnote,[1]>>^
 | The clone URL of the source repository, used when registering the build artifact in CloudBees platform.
 Default is `${{ cloudbees.scm.repositoryUrl }}`.
 
 | `ref`
 | String
-| No
+| Only required if a different repository/branch.^<<footnote,[1]>>^
 | The tag or branch of the source repository, used when registering the build artifact in CloudBees platform.
 Default is `${{ cloudbees.scm.ref }}`.
 
 |===
+
+[#footnote]
+^[1]^ By default, this action associates the artifact version with the code commit associated with the workflow run in the workflow's repository/branch.
+If a different commit/repository/branch has been checked out for building the artifact, specify that commit ID instead. If you do not want to associate a commit with this artifact version, specify an empty commit.
 
 == Output
 

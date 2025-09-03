@@ -153,6 +153,7 @@ func (k *Config) createArtifactInfo(destinations []string, imageRef string) erro
 				break
 			}
 			time.Sleep(retryDelay)
+			retryDelay = 2 * retryDelay
 		}
 		if err != nil {
 			return err
