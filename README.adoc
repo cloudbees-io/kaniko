@@ -136,26 +136,6 @@ Default is `${{ cloudbees.scm.ref }}`.
 | Data type
 | Description
 
-| `digest`
-| String
-| The image digest.
-
-| `tag`
-| String
-| The tag of the first pushed image.
-
-| `tag-digest`
-| String
-| The tag of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
-Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
-Use this format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
-
-| `image`
-| String
-| Image reference of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
-Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
-Use this image reference format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
-
 | `artifact-ids`
 | JSON string
 | The unique identifiers for each of the published image locations (`destination`) reported to CloudBees platform, in JSON format.
@@ -164,6 +144,12 @@ Use this image reference format to guarantee that the same image is used even if
 | String
 | The image digest.
 
+| `image`
+| String
+| Image reference of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
+Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
+Use this image reference format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
+
 | `tag`
 | String
 | The tag of the first pushed image.
@@ -173,12 +159,6 @@ Use this image reference format to guarantee that the same image is used even if
 | The tag of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
 Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
 Use this format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
-
-| `image`
-| String 
-| Image reference of the first specified destination and the image digest, in a format not part of the OCI standard but supported by most container tools.
-Tools loading such an image reference ignore the tag, which serves as a hint for humans, but perform the lookup based on the image repository and digest only.
-Use this image reference format to guarantee that the same image is used even if the tag has been overwritten, and to prevent stale image caches on different nodes.
 
 |===
 
