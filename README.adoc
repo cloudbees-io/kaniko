@@ -124,6 +124,12 @@ Default is `${{ cloudbees.scm.repositoryUrl }}`.
 | The tag or branch of the source repository, used when registering the build artifact in CloudBees platform.
 Default is `${{ cloudbees.scm.ref }}`.
 
+| `artifact-name`
+| String
+| No
+| The name of the build artifact to register.
+If not specified, the artifact name defaults to the image name portion of the first `destination` input value.
+
 |===
 
 [#footnote]

@@ -509,6 +509,17 @@ func Test_buildCreateArtifactInfoRequest(t *testing.T) {
 		require.Equal(t, "https://github.com/cloudbees-io/kaniko", commit["repository_url"])
 		require.Equal(t, "main", commit["ref"])
 	})
+	t.Run("success - set artifact name input", func(t *testing.T) {
+		config := Config{}
+		setOSEnv()
+		destination := "ubuntu"
+		os.Setenv("INPUT_ARTIFACT_NAME", "my-artifact-name")
+		defer os.Unsetenv("INPUT_ARTIFACT_NAME")
+		artInfo, err := config.buildCreateArtifactInfoRequest(destination, "ubuntu:latest@sha256:cafebabebeef", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
+		require.Nil(t, err)
+		require.NotNil(t, artInfo)
+		require.Equal(t, "my-artifact-name", artInfo["name"])
+	})
 }
 
 func setOSEnv() {

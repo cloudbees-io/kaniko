@@ -263,6 +263,11 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, imageRef, runId, ru
 	repositoryURL := os.Getenv("INPUT_REPOSITORY_URL")
 	inputRef := os.Getenv("INPUT_REF")
 
+	artifactName := os.Getenv("INPUT_ARTIFACT_NAME")
+	if artifactName != "" {
+		imgName = artifactName
+	}
+
 	artInfo := CreateArtifactInfoMap{
 		"runId":       runId,
 		"run_attempt": runAttempt,
