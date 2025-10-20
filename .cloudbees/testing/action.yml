@@ -65,6 +65,13 @@ inputs:
       The name of the build artifact as it will be registered.
       By default, the artifact name is derived from the image repository name.
     required: false
+  component-id:
+    description: >
+      The component_id of the component that the artifact belongs to.
+      If specified, the component must belong to either the same org as the current workflow run or its sub-orgs.
+      If not specified, defaults to the current workflow run’s component.
+    default: ${{cloudbees.component.id}}
+    required: false
 
 outputs:
   digest:

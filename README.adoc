@@ -130,6 +130,12 @@ Default is `${{ cloudbees.scm.ref }}`.
 | The name of the build artifact to register.
 If not specified, the artifact name defaults to the image name portion of the first `destination` input value.
 
+| `component-id`
+| String
+| No
+| The component_id of the component that the artifact belongs to.
+If specified, the component must belong to either the same org as the current workflow run or its sub-orgs.
+If not specified, defaults to the current workflow run’s component ${{cloudbees.component.id}}.
 |===
 
 [#footnote]

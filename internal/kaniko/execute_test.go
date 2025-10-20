@@ -520,6 +520,28 @@ func Test_buildCreateArtifactInfoRequest(t *testing.T) {
 		require.NotNil(t, artInfo)
 		require.Equal(t, "my-artifact-name", artInfo["name"])
 	})
+	t.Run("success - set component-id input", func(t *testing.T) {
+		config := Config{}
+		setOSEnv()
+		destination := "ubuntu"
+		os.Setenv("INPUT_COMPONENT_ID", "my-component-id")
+		defer os.Unsetenv("INPUT_COMPONENT_ID")
+		artInfo, err := config.buildCreateArtifactInfoRequest(destination, "ubuntu:latest@sha256:cafebabebeef", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
+		require.Nil(t, err)
+		require.NotNil(t, artInfo)
+		require.Equal(t, "my-component-id", artInfo["component_id"])
+	})
+	t.Run("success - empty component-id input - not included in artifact info", func(t *testing.T) {
+		config := Config{}
+		setOSEnv()
+		destination := "ubuntu"
+		os.Setenv("INPUT_COMPONENT_ID", "")
+		defer os.Unsetenv("INPUT_COMPONENT_ID")
+		artInfo, err := config.buildCreateArtifactInfoRequest(destination, "ubuntu:latest@sha256:cafebabebeef", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
+		require.Nil(t, err)
+		require.NotNil(t, artInfo)
+		require.NotContains(t, artInfo, "component_id")
+	})
 }
 
 func setOSEnv() {

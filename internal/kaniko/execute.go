@@ -263,7 +263,7 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, imageRef, runId, ru
 	repositoryURL := os.Getenv("INPUT_REPOSITORY_URL")
 	inputRef := os.Getenv("INPUT_REF")
 
-	artifactName := os.Getenv("INPUT_ARTIFACT_NAME")
+	artifactName := strings.TrimSpace(os.Getenv("INPUT_ARTIFACT_NAME"))
 	if artifactName != "" {
 		imgName = artifactName
 	}
@@ -281,6 +281,11 @@ func (k *Config) buildCreateArtifactInfoRequest(destination, imageRef, runId, ru
 			"repository_url": repositoryURL,
 			"ref":            inputRef,
 		},
+	}
+
+	componentID := strings.TrimSpace(os.Getenv("INPUT_COMPONENT_ID"))
+	if componentID != "" {
+		artInfo["component_id"] = componentID
 	}
 
 	return artInfo, nil
