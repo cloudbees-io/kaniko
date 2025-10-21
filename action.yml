@@ -128,3 +128,5 @@ runs:
         INPUT_REPOSITORY_URL: ${{ inputs.repository-url }}
         INPUT_COMMIT: ${{ inputs.commit }}
         INPUT_REF: ${{ inputs.ref }}
+        INPUT_ARTIFACT_NAME: ${{ inputs.artifact-name }}
+        INPUT_COMPONENT_ID: ${{ inputs.component-id }}
