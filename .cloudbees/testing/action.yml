@@ -67,9 +67,7 @@ inputs:
     required: false
   component-id:
     description: >
-      The component_id of the component that the artifact belongs to.
-      If specified, the component must belong to either the same org as the current workflow run or its sub-orgs.
-      If not specified, defaults to the current workflow run’s component.
+      The ID of the component associated with the artifact. If not provided, the artifact is registered with the component of the current workflow run.
     default: ${{cloudbees.component.id}}
     required: false
 
