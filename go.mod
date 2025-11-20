@@ -1,13 +1,12 @@
 module github.com/cloudbees-io/kaniko
 
-go 1.24.2
+go 1.25.4
 
 require (
 	github.com/cloudbees-io/registry-config v0.0.0-20250219162455-35e79b95bcf2
 	github.com/distribution/reference v0.6.0
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
-
 )
 
 require (
