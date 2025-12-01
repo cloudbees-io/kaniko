@@ -1,4 +1,4 @@
-= CloudBees action: Build and publish Docker images with Kaniko
+= CloudBees action: Build and publish Docker images with Kaniko 
 
 Use the Kaniko action to build images based upon a Dockerfile, then publish the image to a Docker registry.
 Kaniko builds images inside a container or Kubernetes cluster.
