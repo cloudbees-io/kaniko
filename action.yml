@@ -106,7 +106,7 @@ runs:
       name: Build, publish, and optionally save Docker image as a tar archive.
       uses: docker://public.ecr.aws/l7o7z1g8/actions/kaniko-action:${{ action.scm.sha }}
       with:
-        entrypoint: /kaniko/kaniko-action-wrapper
+        entrypoint: /usr/local/bin/kaniko-action
         args: |
           --dockerfile "${{ inputs.dockerfile }}"
           --context "${{ inputs.context }}"
