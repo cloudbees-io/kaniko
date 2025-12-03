@@ -83,7 +83,7 @@ jobs:
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
         verbosity: debug
         tar-path: ${{ cloudbees.home }}/image.tar
-        kaniko-dir: "/kaniko2"
+        #kaniko-dir: "/kaniko2"
 
     - name: Check test image
       uses: docker://gcr.io/go-containerregistry/crane:debug
