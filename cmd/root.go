@@ -60,5 +60,5 @@ func init() {
 	cmd.Flags().StringVar(&cfg.Verbosity, "verbosity", "debug", "Verbosity level of the Kaniko executor")
 	cmd.Flags().StringVar(&cfg.Target, "target", "", "Target stage to build in a multi-stage Dockerfile")
 	cmd.Flags().StringVar(&cfg.TarPath, "tar-path", "", "Path to save the image tar file (optional). If set, the image will be saved as a tar file.")
-	cmd.Flags().StringVar(&cfg.KanikoDir, "kaniko-dir", "", "Path to the kaniko directory (takes precedence over the KANIKO_DIR environment variable)")
+	cmd.Flags().StringVar(&cfg.KanikoDir, "kaniko-dir", "", "Path to the kaniko directory (optional and takes precedence over the KANIKO_DIR environment variable)")
 }
