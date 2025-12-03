@@ -188,4 +188,4 @@ runs:
       name: Register an artifact with the CloudBees Unify
       uses: cloudbees-io/register-build-artifacts@main
       with:
-        name: ${{ steps.prepare-register-build-artifacts.outputs.artifact-metadata }}
+        artifact-metadata: ${{ steps.prepare-register-build-artifacts.outputs.artifact-metadata }}
