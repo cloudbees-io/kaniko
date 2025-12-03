@@ -71,6 +71,13 @@ inputs:
     default: ${{cloudbees.component.id}}
     required: false
 
+  kaniko-dir:
+    description: >
+      Path to the Kaniko working directory. If set, it is passed as --kaniko-dir to the executor
+      and takes precedence over the KANIKO_DIR environment variable.
+    required: false
+    default: ''
+
 outputs:
   digest:
     value: ${{ steps.imgbuild.outputs.digest }}
@@ -106,7 +113,7 @@ runs:
       name: Build, publish, and optionally save Docker image as a tar archive.
       uses: docker://public.ecr.aws/l7o7z1g8/actions/kaniko-action:${{ action.scm.sha }}
       with:
-        entrypoint: /kaniko/kaniko-action
+        entrypoint: /usr/local/bin/kaniko-action
         args: |
           --dockerfile "${{ inputs.dockerfile }}"
           --context "${{ inputs.context }}"
@@ -115,6 +122,7 @@ runs:
           --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}"
           --verbosity "${{ inputs.verbosity }}"
           --target "${{ inputs.target }}"
+          ${{ inputs.kaniko-dir && format('--kaniko-dir "{0}"', inputs.kaniko-dir) || '' }}
           ${{ inputs.tar-path && format('--tar-path "{0}"', inputs.tar-path) || '' }}
       env:
         DOCKER_CONFIG: ${{ cloudbees.home }}/.docker

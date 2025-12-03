@@ -29,6 +29,16 @@ func run(command *cobra.Command, args []string) error {
 	if len(args) > 0 {
 		return fmt.Errorf("unknown arguments: %v", args)
 	}
+
+	// --- KanikoDir Resolution Order ---
+	// If --kaniko-dir flag is passed → already set in cfg.KanikoDir → use it
+	// Else, fallback to KANIKO_DIR env var
+	if cfg.KanikoDir == "" {
+		if v := os.Getenv("KANIKO_DIR"); v != "" {
+			cfg.KanikoDir = v
+		}
+	}
+
 	newContext, cancel := context.WithCancel(context.Background())
 	osChannel := make(chan os.Signal, 1)
 	signal.Notify(osChannel, os.Interrupt)
@@ -50,4 +60,5 @@ func init() {
 	cmd.Flags().StringVar(&cfg.Verbosity, "verbosity", "debug", "Verbosity level of the Kaniko executor")
 	cmd.Flags().StringVar(&cfg.Target, "target", "", "Target stage to build in a multi-stage Dockerfile")
 	cmd.Flags().StringVar(&cfg.TarPath, "tar-path", "", "Path to save the image tar file (optional). If set, the image will be saved as a tar file.")
+	cmd.Flags().StringVar(&cfg.KanikoDir, "kaniko-dir", "", "Path to the kaniko directory (optional and takes precedence over the KANIKO_DIR environment variable)")
 }
