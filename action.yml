@@ -95,7 +95,7 @@ outputs:
       The tag only serves as a hint for humans.
       Using this image reference format guarantees that the image is continued to be used even when the tag was overwritten and prevents stale image caches on different nodes.
   artifact-ids:
-    value: ${{ steps.imgbuild.outputs.artifact-ids }}
+    value: ${{ steps.register-build-artifacts.outputs.artifact-ids }}
     description: |
       Artifact IDs for the published images reported to the workflow run for artifact traceability purposes.
 
@@ -130,3 +130,62 @@ runs:
         INPUT_REF: ${{ inputs.ref }}
         INPUT_ARTIFACT_NAME: ${{ inputs.artifact-name }}
         INPUT_COMPONENT_ID: ${{ inputs.component-id }}
+
+    - id: prepare-register-build-artifacts
+      name: Prepare to register build artifacts
+      uses: docker://alpine:3.22
+      run: |         
+        destinations=$(echo "$DESTINATION" | awk -F',' '{for(i=1;i<=NF;i++){gsub(/^[ \t\r\n]+|[ \t\r\n]+$/, "", $i); printf "\"%s\"%s", $i, (i<NF?",":"")}}' | sed 's/^/[/; s/$/]/')
+
+        artifact_json="["
+
+        for destination in $(echo "$destinations" | tr -d '[]"' | tr ',' '\n'); do        
+          artifactName=""
+          artifactVersion=""
+          if [[ "$destination" == *"@"* ]]; then
+            # Digest reference
+            artifactName="${destination%@*}"
+            artifactVersion="${destination##*@}"
+          elif [[ "$destination" == *":"* ]]; then
+            # Tagged reference
+            artifactName="${destination%%:*}"
+            artifactVersion="${destination##*:}"
+          else
+            # Without tag or digest, assume latest
+            artifactName="destination"
+            artifactVersion="latest"
+          fi
+
+          if [ -n "$ARTIFACT_NAME" ]; then
+            artifactName="$ARTIFACT_NAME"
+          fi
+
+          artifactDigest=""
+          if [ -n "$IMAGE_REF" ]; then
+            artifactDigest="${IMAGE_REF#*@}"
+          fi
+  
+          artifact="{\"name\":\"${artifactName}\",\"version\":\"${artifactVersion}\",\"digest\":\"${artifactDigest}\",\"url\":\"$destination\", \"commit\":\"$COMMIT\",\"repositoryUrl\":\"$REPOSITORY_URL\",\"ref\":\"$REF\", \"componentId\":\"$COMPONENT_ID\"}"
+          artifact_json="${artifact_json}${artifact},"
+        done
+
+        # Remove trailing comma and close JSON array
+        artifact_json="${artifact_json%,}]"
+
+        # Store the final payload in output
+        echo "$artifact_json" > $CLOUDBEES_OUTPUTS/artifact-metadata
+
+      env:
+        DESTINATION: ${{ inputs.destination }}
+        ARTIFACT_NAME: ${{ inputs.artifact-name }}
+        IMAGE_REF: ${{ steps.imgbuild.outputs.image }}
+        COMMIT: ${{ inputs.commit }}
+        REPOSITORY_URL: ${{ inputs.repository-url }}
+        REF: ${{ inputs.ref }}
+        COMPONENT_ID: ${{ inputs.component-id }}
+
+    - id: register-build-artifacts
+      name: Register an artifact with the CloudBees Unify
+      uses: cloudbees-io/register-build-artifacts@main
+      with:
+        name: ${{ steps.prepare-register-build-artifacts.outputs.artifact-metadata }}
