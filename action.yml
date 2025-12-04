@@ -173,7 +173,7 @@ runs:
             artifactDigest="${IMAGE_REF#*@}"
           fi
   
-          artifact="{\"name\":\"${artifactName}\",\"version\":\"${artifactVersion}\",\"digest\":\"${artifactDigest}\",\"url\":\"$destination\", \"commit\":\"$COMMIT\",\"repositoryUrl\":\"$REPOSITORY_URL\",\"ref\":\"$REF\", \"componentId\":\"$COMPONENT_ID\"}"
+          artifact="{\"name\":\"${artifactName}\",\"version\":\"${artifactVersion}\",\"digest\":\"${artifactDigest}\",\"url\":\"$destination\", \"commit\":\"$COMMIT\",\"repositoryUrl\":\"$REPOSITORY_URL\",\"ref\":\"$REF\", \"componentId\":\"$COMPONENT_ID\", \"type\":\"docker\"}"
           artifact_json="${artifact_json}${artifact},"
         done
 
