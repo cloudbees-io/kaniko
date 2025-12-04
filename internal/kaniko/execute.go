@@ -398,8 +398,30 @@ func (k *Config) lookupBinary() {
 	k.ExecutablePath = execPath
 }
 
+// env builds the environment for the kaniko executor process.
+// If KanikoDir is set, we ensure KANIKO_DIR is present (or overridden) in the env,
+// so that kaniko sees both the flag --kaniko-dir and the KANIKO_DIR variable.
 func (k *Config) env() []string {
-	return os.Environ()
+	env := os.Environ()
+
+	if k.KanikoDir != "" {
+		const prefix = "KANIKO_DIR="
+		found := false
+
+		for i, e := range env {
+			if strings.HasPrefix(e, prefix) {
+				env[i] = prefix + k.KanikoDir
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			env = append(env, prefix+k.KanikoDir)
+		}
+	}
+
+	return env
 }
 
 func validateVerbosity(verbosity string) error {
@@ -473,6 +495,12 @@ func (k *Config) cmdBuilder(digestFile string) (*exec.Cmd, error) {
 
 	if k.TarPath != "" {
 		cmdArgs = append(cmdArgs, "--tar-path", k.TarPath)
+	}
+
+	// If a KanikoDir was configured (via --kaniko-dir in our wrapper),
+	// propagate it to the kaniko executor.
+	if k.KanikoDir != "" {
+		cmdArgs = append(cmdArgs, "--kaniko-dir", k.KanikoDir)
 	}
 
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)
