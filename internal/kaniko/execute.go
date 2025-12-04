@@ -402,8 +402,7 @@ func (k *Config) lookupBinary() {
 // If KanikoDir is set, we ensure KANIKO_DIR is present (or overridden) in the env,
 // so that kaniko sees both the flag --kaniko-dir and the KANIKO_DIR variable.
 func (k *Config) env() []string {
-	env := os.Environ()
-	return env
+	return os.Environ()
 }
 
 func validateVerbosity(verbosity string) error {
