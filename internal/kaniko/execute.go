@@ -398,9 +398,6 @@ func (k *Config) lookupBinary() {
 	k.ExecutablePath = execPath
 }
 
-// env builds the environment for the kaniko executor process.
-// If KanikoDir is set, we ensure KANIKO_DIR is present (or overridden) in the env,
-// so that kaniko sees both the flag --kaniko-dir and the KANIKO_DIR variable.
 func (k *Config) env() []string {
 	return os.Environ()
 }
