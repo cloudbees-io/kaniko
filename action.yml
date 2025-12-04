@@ -74,7 +74,7 @@ inputs:
   kaniko-dir:
     description: >
       Path to the Kaniko working directory. If set, it is passed as --kaniko-dir to the executor
-      and takes precedence over the KANIKO_DIR environment variable.
+      and exported as KANIKO_DIR so Kaniko sees both the flag and the environment variable.
     required: false
     default: ''
 
@@ -113,7 +113,7 @@ runs:
       name: Build, publish, and optionally save Docker image as a tar archive.
       uses: docker://public.ecr.aws/l7o7z1g8/actions/kaniko-action:${{ action.scm.sha }}
       with:
-        entrypoint: /usr/local/bin/kaniko-action
+        entrypoint: /kaniko/kaniko-action
         args: |
           --dockerfile "${{ inputs.dockerfile }}"
           --context "${{ inputs.context }}"
@@ -138,3 +138,4 @@ runs:
         INPUT_REF: ${{ inputs.ref }}
         INPUT_ARTIFACT_NAME: ${{ inputs.artifact-name }}
         INPUT_COMPONENT_ID: ${{ inputs.component-id }}
+        KANIKO_DIR: ${{ inputs.kaniko-dir }}
