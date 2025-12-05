@@ -30,13 +30,13 @@ func run(command *cobra.Command, args []string) error {
 		return fmt.Errorf("unknown arguments: %v", args)
 	}
 
-	// --- KanikoDir Resolution Order ---
-	// If --kaniko-dir flag is passed → already set in cfg.KanikoDir → use it
-	// Else, fallback to KANIKO_DIR env var
-	if cfg.KanikoDir == "" {
-		if v := os.Getenv("KANIKO_DIR"); v != "" {
-			cfg.KanikoDir = v
-		}
+	// We expect the caller (action.yaml) to set both:
+	//   - the --kaniko-dir flag (parsed into cfg.KanikoDir)
+	//   - the KANIKO_DIR environment variable
+	//
+	// If cfg.KanikoDir is empty, we just let Kaniko use its default directory.
+	if cfg.KanikoDir != "" {
+		fmt.Fprintf(os.Stderr, "Using kaniko directory: %s\n", cfg.KanikoDir)
 	}
 
 	newContext, cancel := context.WithCancel(context.Background())
@@ -60,5 +60,5 @@ func init() {
 	cmd.Flags().StringVar(&cfg.Verbosity, "verbosity", "debug", "Verbosity level of the Kaniko executor")
 	cmd.Flags().StringVar(&cfg.Target, "target", "", "Target stage to build in a multi-stage Dockerfile")
 	cmd.Flags().StringVar(&cfg.TarPath, "tar-path", "", "Path to save the image tar file (optional). If set, the image will be saved as a tar file.")
-	cmd.Flags().StringVar(&cfg.KanikoDir, "kaniko-dir", "", "Path to the kaniko directory (optional and takes precedence over the KANIKO_DIR environment variable)")
+	cmd.Flags().StringVar(&cfg.KanikoDir, "kaniko-dir", "", "Path to the Kaniko working directory (passed as --kaniko-dir to the executor)")
 }

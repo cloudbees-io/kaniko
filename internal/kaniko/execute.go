@@ -249,6 +249,12 @@ func (k *Config) cmdBuilder(digestFile string) (*exec.Cmd, error) {
 		cmdArgs = append(cmdArgs, "--tar-path", k.TarPath)
 	}
 
+	// If a KanikoDir was configured (via --kaniko-dir in our wrapper),
+	// propagate it to the kaniko executor.
+	if k.KanikoDir != "" {
+		cmdArgs = append(cmdArgs, "--kaniko-dir", k.KanikoDir)
+	}
+
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)
 	kanikoCmd.Env = k.env()
 
