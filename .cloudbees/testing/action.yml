@@ -174,7 +174,7 @@ runs:
             artifactDigest="${IMAGE_REF#*@}"
           fi
   
-          artifact="{\"name\":\"${artifactName}\",\"version\":\"${artifactVersion}\",\"digest\":\"${artifactDigest}\",\"url\":\"$destination\", \"commit\":\"$COMMIT\",\"repositoryUrl\":\"$REPOSITORY_URL\",\"ref\":\"$REF\", \"componentId\":\"$COMPONENT_ID\"}"
+          artifact="{\"name\":\"${artifactName}\",\"version\":\"${artifactVersion}\",\"digest\":\"${artifactDigest}\",\"url\":\"$destination\", \"commit\":\"$COMMIT\",\"repositoryUrl\":\"$REPOSITORY_URL\",\"ref\":\"$REF\", \"componentId\":\"$COMPONENT_ID\", \"type\":\"docker\"}"
           artifact_json="${artifact_json}${artifact},"
         done
 
@@ -195,6 +195,6 @@ runs:
 
     - id: register-build-artifacts
       name: Register an artifact with the CloudBees Unify
-      uses: cloudbees-io/register-build-artifacts@main
+      uses: cloudbees-io/register-build-artifacts@v1
       with:
         artifact-metadata: ${{ steps.prepare-register-build-artifacts.outputs.artifact-metadata }}
