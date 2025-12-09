@@ -1,11 +1,8 @@
 package kaniko
 
 import (
-	"bytes"
 	"context"
-	"fmt"
-	"io"
-	"net/http"
+	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -409,7 +406,7 @@ func Test_writeActionOutput(t *testing.T) {
 			require.NoError(t, err)
 			defer os.RemoveAll(outDir)
 
-			imageRef, err := testee.writeActionOutputs(outDir, digestFile)
+			err = testee.writeActionOutputs(outDir, digestFile)
 			require.NoError(t, err, "write outputs")
 
 			outputNames := []string{"digest", "tag", "tag-digest", "image"}
@@ -418,343 +415,88 @@ func Test_writeActionOutput(t *testing.T) {
 			for i, outputName := range outputNames {
 				v, err := os.ReadFile(filepath.Join(outDir, outputName))
 				require.NoError(t, err, outputName)
-				require.Equal(t, c.wantImage, imageRef)
 				require.Equal(t, expectValues[i], string(v), outputName)
 			}
 		})
 	}
 }
 
-func Test_buildCreateArtifactInfoRequest(t *testing.T) {
-	fakeImageRef := "my.registry/myimage:sometag@sha256:cafebabebeef"
+func Test_writeArtifactMetadata(t *testing.T) {
+	t.Run("ValidDestinations", func(t *testing.T) {
 
-	t.Run("destination is empty", func(t *testing.T) {
-		var c = Config{}
-		setOSEnv()
-
-		_, err := c.buildCreateArtifactInfoRequest("", fakeImageRef, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		require.EqualError(t, err, "destination is empty")
-	})
-
-	t.Run("invalid destination format - no name specified", func(t *testing.T) {
-		var c = Config{}
-		setOSEnv()
-		destination := "gcr.io/kaniko-project/:v1.0"
-
-		_, err := c.buildCreateArtifactInfoRequest(destination, fakeImageRef, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		require.EqualErrorf(t, err, "failed to parse image reference 'gcr.io/kaniko-project/:v1.0': invalid reference format", "failed to parse image reference '%s': invalid reference format", destination)
-	})
-
-	t.Run("invalid destination format - no version specified", func(t *testing.T) {
-		var c = Config{}
-		setOSEnv()
-		destination := "gcr.io/kaniko-project/executor:"
-
-		_, err := c.buildCreateArtifactInfoRequest(destination, fakeImageRef, os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		require.EqualErrorf(t, err, "failed to parse image reference 'gcr.io/kaniko-project/executor:': invalid reference format", "failed to parse image reference '%s': invalid reference format", destination)
-	})
-
-	t.Run("success - named imgRef 1", func(t *testing.T) {
-		var c = Config{}
-		setOSEnv()
-		destination := "ubuntu"
-
-		artInfo, err := c.buildCreateArtifactInfoRequest(destination, "ubuntu:latest@sha256:cafebabebeef", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		require.Nil(t, err)
-		require.NotNil(t, artInfo)
-		require.Equal(t, "ubuntu", artInfo["name"])
-		require.Equal(t, "latest", artInfo["version"])
-		require.Equal(t, "sha256:cafebabebeef", artInfo["digest"])
-	})
-
-	t.Run("success - tagged imgRef 2", func(t *testing.T) {
-		var c = Config{}
-		setOSEnv()
-		destination := "myrepo/myimage:1."
-
-		artInfo, err := c.buildCreateArtifactInfoRequest(destination, "myrepo/myimage:1.@sha256:cafebabebeef", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		require.Nil(t, err)
-		require.NotNil(t, artInfo)
-		require.Equal(t, "myrepo/myimage", artInfo["name"])
-		require.Equal(t, "1.", artInfo["version"])
-		require.Equal(t, "sha256:cafebabebeef", artInfo["digest"])
-	})
-
-	t.Run("success - tagged imgRef 3", func(t *testing.T) {
-		var c = Config{}
-		setOSEnv()
-		destination := "public.ecr.aws/l7o7z1g8/actions/kaniko-action:a0cb1b7ee330e2f1ecf0e7bb974e167f30c0bce6"
-
-		artInfo, err := c.buildCreateArtifactInfoRequest(destination, "public.ecr.aws/l7o7z1g8/actions/kaniko-action:a0cb1b7ee330e2f1ecf0e7bb974e167f30c0bce6@sha256:cafebabebeef", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		require.Nil(t, err)
-		require.NotNil(t, artInfo)
-		require.Equal(t, "public.ecr.aws/l7o7z1g8/actions/kaniko-action", artInfo["name"])
-		require.Equal(t, "a0cb1b7ee330e2f1ecf0e7bb974e167f30c0bce6", artInfo["version"])
-		require.Equal(t, "sha256:cafebabebeef", artInfo["digest"])
-	})
-	t.Run("success - commit provided", func(t *testing.T) {
-		var c = Config{}
-		setOSEnv()
-		setCommitEnv()
-		destination := "ubuntu"
-
-		artInfo, err := c.buildCreateArtifactInfoRequest(destination, "ubuntu:latest@sha256:cafebabebeef", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		commit := artInfo["commit"].(map[string]string)
-		require.Nil(t, err)
-		require.NotNil(t, artInfo)
-		require.Equal(t, "ubuntu", artInfo["name"])
-		require.Equal(t, "latest", artInfo["version"])
-		require.Equal(t, "sha256:cafebabebeef", artInfo["digest"])
-		require.Equal(t, "17564567-e89b-12d3-a456-426614174000", commit["commit_id"])
-		require.Equal(t, "https://github.com/cloudbees-io/kaniko", commit["repository_url"])
-		require.Equal(t, "main", commit["ref"])
-	})
-	t.Run("success - set artifact name input", func(t *testing.T) {
-		config := Config{}
-		setOSEnv()
-		destination := "ubuntu"
-		os.Setenv("INPUT_ARTIFACT_NAME", "my-artifact-name")
-		defer os.Unsetenv("INPUT_ARTIFACT_NAME")
-		artInfo, err := config.buildCreateArtifactInfoRequest(destination, "ubuntu:latest@sha256:cafebabebeef", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		require.Nil(t, err)
-		require.NotNil(t, artInfo)
-		require.Equal(t, "my-artifact-name", artInfo["name"])
-	})
-	t.Run("success - set component-id input", func(t *testing.T) {
-		config := Config{}
-		setOSEnv()
-		destination := "ubuntu"
-		os.Setenv("INPUT_COMPONENT_ID", "my-component-id")
-		defer os.Unsetenv("INPUT_COMPONENT_ID")
-		artInfo, err := config.buildCreateArtifactInfoRequest(destination, "ubuntu:latest@sha256:cafebabebeef", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		require.Nil(t, err)
-		require.NotNil(t, artInfo)
-		require.Equal(t, "my-component-id", artInfo["component_id"])
-	})
-	t.Run("success - empty component-id input - not included in artifact info", func(t *testing.T) {
-		config := Config{}
-		setOSEnv()
-		destination := "ubuntu"
-		os.Setenv("INPUT_COMPONENT_ID", "")
-		defer os.Unsetenv("INPUT_COMPONENT_ID")
-		artInfo, err := config.buildCreateArtifactInfoRequest(destination, "ubuntu:latest@sha256:cafebabebeef", os.Getenv("CLOUDBEES_RUN_ID"), os.Getenv("CLOUDBEES_RUN_ATTEMPT"))
-		require.Nil(t, err)
-		require.NotNil(t, artInfo)
-		require.NotContains(t, artInfo, "component_id")
-	})
-}
-
-func setOSEnv() {
-	os.Setenv("CLOUDBEES_API_URL", "https://cloudbees.io")
-	os.Setenv("CLOUDBEES_API_TOKEN", "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUI")
-	os.Setenv("CLOUDBEES_RUN_ID", "123e4567-e89b-12d3-a456-426614174000")
-	os.Setenv("CLOUDBEES_RUN_ATTEMPT", "1")
-}
-
-func setCommitEnv() {
-	os.Setenv("INPUT_COMMIT", "17564567-e89b-12d3-a456-426614174000")
-	os.Setenv("INPUT_REPOSITORY_URL", "https://github.com/cloudbees-io/kaniko")
-	os.Setenv("INPUT_REF", "main")
-}
-
-type MockHTTPClient struct {
-	Response *http.Response
-	Err      error
-}
-
-func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
-	return m.Response, m.Err
-}
-
-func Test_createArtifactInfo(t *testing.T) {
-	t.Run("client is nil", func(t *testing.T) {
-		var c = Config{}
-		setOSEnv()
-		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
-
-		err := c.createArtifactInfo(destinations, "")
-		require.EqualError(t, err, "client is nil")
-	})
-
-	t.Run("destinations list empty", func(t *testing.T) {
-		setOSEnv()
-		destinations := []string{}
-
-		// Prepare a mock response
-		mockResponse := &http.Response{}
-
-		mockClient := &MockHTTPClient{
-			Response: mockResponse,
-			Err:      nil,
-		}
-
-		var c = Config{
-			client: mockClient,
-		}
-
-		err := c.createArtifactInfo(destinations, "")
-		require.EqualError(t, err, "destinations is empty")
-	})
-
-	t.Run("CLOUDBEES_API_URL is empty", func(t *testing.T) {
-		setOSEnv()
-		os.Setenv("CLOUDBEES_API_URL", "")
-
-		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
-
-		// Prepare a mock response
-		mockResponse := &http.Response{}
-
-		mockClient := &MockHTTPClient{
-			Response: mockResponse,
-			Err:      nil,
-		}
-
-		var c = Config{
-			client: mockClient,
-		}
-
-		err := c.createArtifactInfo(destinations, "")
-		require.EqualError(t, err, "missing CLOUDBEES_API_URL environment variable")
-	})
-
-	t.Run("CLOUDBEES_API_TOKEN is nil", func(t *testing.T) {
-		setOSEnv()
-		os.Setenv("CLOUDBEES_API_TOKEN", "")
-		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
-
-		// Prepare a mock response
-		mockResponse := &http.Response{}
-
-		mockClient := &MockHTTPClient{
-			Response: mockResponse,
-			Err:      nil,
-		}
-
-		var c = Config{
-			client: mockClient,
-		}
-
-		err := c.createArtifactInfo(destinations, "")
-		require.EqualError(t, err, "missing CLOUDBEES_API_TOKEN environment variable")
-	})
-
-	t.Run("CLOUDBEES_RUN_ID is empty", func(t *testing.T) {
-		setOSEnv()
-		os.Setenv("CLOUDBEES_RUN_ID", "")
-		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
-
-		// Prepare a mock response
-		mockResponse := &http.Response{}
-
-		mockClient := &MockHTTPClient{
-			Response: mockResponse,
-			Err:      nil,
-		}
-
-		var c = Config{
-			client: mockClient,
-		}
-
-		err := c.createArtifactInfo(destinations, "")
-		require.EqualError(t, err, "missing CLOUDBEES_RUN_ID environment variable")
-	})
-
-	t.Run("CLOUDBEES_RUN_ATTEMPT is empty", func(t *testing.T) {
-		setOSEnv()
-		os.Setenv("CLOUDBEES_RUN_ATTEMPT", "")
-		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
-
-		// Prepare a mock response
-		mockResponse := &http.Response{}
-
-		mockClient := &MockHTTPClient{
-			Response: mockResponse,
-			Err:      nil,
-		}
-
-		var c = Config{
-			client: mockClient,
-		}
-
-		err := c.createArtifactInfo(destinations, "")
-		require.EqualError(t, err, "missing CLOUDBEES_RUN_ATTEMPT environment variable")
-	})
-
-	t.Run("create - Success", func(t *testing.T) {
-		setOSEnv()
-		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0"}
-
-		// Prepare a mock response
-		mockResponse := &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       io.NopCloser(bytes.NewBufferString("{\n\"id\":\"artifact UUID\"\n}")),
-		}
-
-		mockClient := &MockHTTPClient{
-			Response: mockResponse,
-			Err:      nil,
-		}
-
-		var c = Config{
-			client: mockClient,
-		}
-
-		tmpDir, err := os.MkdirTemp("", "kaniko-test")
+		tmpDir, err := os.MkdirTemp("", "kaniko-test-")
 		require.NoError(t, err)
 		defer os.RemoveAll(tmpDir)
 
-		os.Setenv("CLOUDBEES_OUTPUTS", tmpDir)
-		defer os.Unsetenv("CLOUDBEES_OUTPUTS")
+		var c = Config{
+			Destination: "my.registry/myimage:latest,my.registry/myimage:sometag",
+			Verbosity:   "debug",
+		}
 
-		err = c.createArtifactInfo(destinations, "gcr.io/kaniko-project/executor:v1.6.0@sha256:cafebabebeef")
+		err = c.writeArtifactMetadata(tmpDir, "sha256:cafebabebeef")
 		require.NoError(t, err)
 
-		v, err := os.ReadFile(filepath.Join(tmpDir, "artifact-ids"))
-		require.NoError(t, err, "artifact-ids")
-		require.Equal(t, `{"gcr.io/kaniko-project/executor:v1.6.0":"artifact UUID"}`, string(v), "artifact-ids content")
+		data, err := os.ReadFile(filepath.Join(tmpDir, "artifact-ref"))
+		require.NoError(t, err)
+
+		var artifacts []map[string]string
+		err = json.Unmarshal(data, &artifacts)
+		require.NoError(t, err)
+
+		require.Equal(t, 2, len(artifacts))
+		require.Equal(t, "my.registry/myimage", artifacts[0]["name"])
+		require.Equal(t, "latest", artifacts[0]["version"])
+		require.Equal(t, "sha256:cafebabebeef", artifacts[0]["digest"])
+		require.Equal(t, "my.registry/myimage:sometag", artifacts[1]["url"])
 	})
+	t.Run("InvalidDestination", func(t *testing.T) {
 
-	t.Run("create - Error", func(t *testing.T) {
-		setOSEnv()
-		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
-
-		mockClient := &MockHTTPClient{
-			Response: nil,
-			Err:      fmt.Errorf("network error"),
-		}
+		tmpDir, err := os.MkdirTemp("", "kaniko-test-")
+		require.NoError(t, err)
+		defer os.RemoveAll(tmpDir)
 
 		var c = Config{
-			client: mockClient,
+			Destination: "docker.io/library/nginx@sha256:invalid-digest",
 		}
 
-		err := c.createArtifactInfo(destinations, "")
-		require.EqualError(t, err, "network error")
+		err = c.writeArtifactMetadata(tmpDir, "sha256:cafebabebeef")
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "failed to parse image reference")
 	})
+	t.Run("EmptyDestinations", func(t *testing.T) {
 
-	t.Run("create - statusCode not 200", func(t *testing.T) {
-		setOSEnv()
-		destinations := []string{"gcr.io/kaniko-project/executor:v1.6.0", " gcr.io/kaniko-project/executor:v1.6.1"}
-
-		// Prepare a mock response
-		mockResponse := &http.Response{
-			StatusCode: http.StatusBadRequest,
-			Body:       io.NopCloser(bytes.NewBufferString("{\n\"error\":{\n\"code\": 400,\n\"message\": \"Bad Request\",\n\"details\": [\n{\n\"field\": \"InvalidArgument\",\n\"issue\":\"artifact information previously saved with digest cannot be republished without the digest.\"\n}\n]\n}\n}")),
-		}
-
-		mockClient := &MockHTTPClient{
-			Response: mockResponse,
-			Err:      nil,
-		}
+		tmpDir, err := os.MkdirTemp("", "kaniko-test-")
+		require.NoError(t, err)
+		defer os.RemoveAll(tmpDir)
 
 		var c = Config{
-			client: mockClient,
+			Destination: "",
 		}
 
-		err := c.createArtifactInfo(destinations, "gcr.io/kaniko-project/executor:v1.6.0@sha256:cafebabebeef")
-		require.EqualErrorf(t, err, "request failed: \nPOST: https://cloudbees.io/v3/artifactinfos\nHTTP/400 \nBODY: {\n\"error\":{\n\"code\": 400,\n\"message\": \"Bad Request\",\n\"details\": [\n{\n\"field\": \"InvalidArgument\",\n\"issue\":\"artifact information previously saved with digest cannot be republished without the digest.\"\n}\n]\n}\n}",
-			"failed to create artifact info: \nPOST %s\nHTTP/%d %s\nBODY: %s",
-			"https://cloudbees.io/v3/artifactinfos", 400, "Bad Request",
-			"{\n\"error\":{\n\"code\": 400,\n\"message\": \"Bad Request\",\n\"details\": [\n{\n\"field\": \"InvalidArgument\",\n\"issue\":\"artifact information previously saved with digest cannot be republished without the digest.\"\n}\n]\n}\n}")
+		err = c.writeArtifactMetadata(tmpDir, "sha256:cafebabebeef")
+		require.NoError(t, err)
+
+		data, err := os.ReadFile(filepath.Join(tmpDir, "artifact-ref"))
+		require.NoError(t, err)
+
+		var artifacts []map[string]string
+		err = json.Unmarshal(data, &artifacts)
+		require.NoError(t, err)
+
+		require.Equal(t, 0, len(artifacts))
+	})
+	t.Run("invalid reference format", func(t *testing.T) {
+
+		tmpDir, err := os.MkdirTemp("", "kaniko-test-")
+		require.NoError(t, err)
+		defer os.RemoveAll(tmpDir)
+
+		var c = Config{
+			Destination: "my.registry/myimage@sha256:invalid-digest",
+		}
+
+		err = c.writeArtifactMetadata(tmpDir, "sha256:cafebabebeef")
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "invalid reference format")
 	})
 }

@@ -102,7 +102,7 @@ outputs:
       The tag only serves as a hint for humans.
       Using this image reference format guarantees that the image is continued to be used even when the tag was overwritten and prevents stale image caches on different nodes.
   artifact-ids:
-    value: ${{ steps.imgbuild.outputs.artifact-ids }}
+    value: ${{ steps.register-build-artifacts.outputs.artifact-ids }}
     description: |
       Artifact IDs for the published images reported to the workflow run for artifact traceability purposes.
 
@@ -139,3 +139,58 @@ runs:
         INPUT_ARTIFACT_NAME: ${{ inputs.artifact-name }}
         INPUT_COMPONENT_ID: ${{ inputs.component-id }}
         KANIKO_DIR: ${{ inputs.kaniko-dir }}
+
+    - id: prepare-register-build-artifacts
+      if: ${{ steps.imgbuild.outputs.artifact-ref != '' }}
+      name: Prepare to register build artifacts
+      uses: docker://esolang/jq:latest
+      run: |
+
+        json='${{ steps.imgbuild.outputs.artifact-ref }}'
+
+        if [ "$VERBOSITY" = "debug" ] || [ "$VERBOSITY" = "trace" ]; then
+          echo "Received artifact reference JSON: $json"
+        fi
+
+        artifact_json=$(echo "$json" | /usr/bin/jq \
+          --arg component "$COMPONENT_ID" \
+          --arg commit "$COMMIT" \
+          --arg repo "$REPOSITORY_URL" \
+          --arg ref "$REF" \
+          --arg artifactName "$ARTIFACT_NAME" \
+          --arg type "docker" '
+          map(
+            {
+              name: (if $artifactName != "" then $artifactName else .name end),
+              version: .version,
+              digest: .digest,
+              url: .url,
+              commit: $commit,
+              repositoryUrl: $repo,
+              ref: $ref,
+              componentId: $component,
+              type: $type
+            }
+          )
+        ')
+
+        if [ "$VERBOSITY" = "debug" ] || [ "$VERBOSITY" = "trace" ]; then
+          echo "Prepared artifact metadata: $artifact_json"
+        fi
+
+        # Store the final payload in output
+        echo -n "$artifact_json" > $CLOUDBEES_OUTPUTS/artifact-metadata
+
+      env:
+        ARTIFACT_NAME: ${{ inputs.artifact-name }}
+        COMMIT: ${{ inputs.commit }}
+        REPOSITORY_URL: ${{ inputs.repository-url }}
+        REF: ${{ inputs.ref }}
+        COMPONENT_ID: ${{ inputs.component-id }}
+        VERBOSITY: ${{ inputs.verbosity }}
+
+    - id: register-build-artifacts
+      name: Register an artifact with the CloudBees Unify
+      uses: cloudbees-io/register-build-artifacts@v1
+      with:
+        artifact-metadata: ${{ steps.prepare-register-build-artifacts.outputs.artifact-metadata }}
