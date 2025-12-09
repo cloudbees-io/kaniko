@@ -2,6 +2,7 @@ package kaniko
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -418,4 +419,84 @@ func Test_writeActionOutput(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_writeArtifactMetadata(t *testing.T) {
+	t.Run("ValidDestinations", func(t *testing.T) {
+
+		tmpDir, err := os.MkdirTemp("", "kaniko-test-")
+		require.NoError(t, err)
+		defer os.RemoveAll(tmpDir)
+
+		var c = Config{
+			Destination: "my.registry/myimage:latest,my.registry/myimage:sometag",
+			Verbosity:   "debug",
+		}
+
+		err = c.writeArtifactMetadata(tmpDir, "sha256:cafebabebeef")
+		require.NoError(t, err)
+
+		data, err := os.ReadFile(filepath.Join(tmpDir, "artifact-ref"))
+		require.NoError(t, err)
+
+		var artifacts []map[string]string
+		err = json.Unmarshal(data, &artifacts)
+		require.NoError(t, err)
+
+		require.Equal(t, 2, len(artifacts))
+		require.Equal(t, "my.registry/myimage", artifacts[0]["name"])
+		require.Equal(t, "latest", artifacts[0]["version"])
+		require.Equal(t, "sha256:cafebabebeef", artifacts[0]["digest"])
+		require.Equal(t, "my.registry/myimage:sometag", artifacts[1]["url"])
+	})
+	t.Run("InvalidDestination", func(t *testing.T) {
+
+		tmpDir, err := os.MkdirTemp("", "kaniko-test-")
+		require.NoError(t, err)
+		defer os.RemoveAll(tmpDir)
+
+		var c = Config{
+			Destination: "docker.io/library/nginx@sha256:invalid-digest",
+		}
+
+		err = c.writeArtifactMetadata(tmpDir, "sha256:cafebabebeef")
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "failed to parse image reference")
+	})
+	t.Run("EmptyDestinations", func(t *testing.T) {
+
+		tmpDir, err := os.MkdirTemp("", "kaniko-test-")
+		require.NoError(t, err)
+		defer os.RemoveAll(tmpDir)
+
+		var c = Config{
+			Destination: "",
+		}
+
+		err = c.writeArtifactMetadata(tmpDir, "sha256:cafebabebeef")
+		require.NoError(t, err)
+
+		data, err := os.ReadFile(filepath.Join(tmpDir, "artifact-ref"))
+		require.NoError(t, err)
+
+		var artifacts []map[string]string
+		err = json.Unmarshal(data, &artifacts)
+		require.NoError(t, err)
+
+		require.Equal(t, 0, len(artifacts))
+	})
+	t.Run("invalid reference format", func(t *testing.T) {
+
+		tmpDir, err := os.MkdirTemp("", "kaniko-test-")
+		require.NoError(t, err)
+		defer os.RemoveAll(tmpDir)
+
+		var c = Config{
+			Destination: "my.registry/myimage@sha256:invalid-digest",
+		}
+
+		err = c.writeArtifactMetadata(tmpDir, "sha256:cafebabebeef")
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "invalid reference format")
+	})
 }

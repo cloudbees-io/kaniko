@@ -141,57 +141,49 @@ runs:
         KANIKO_DIR: ${{ inputs.kaniko-dir }}
 
     - id: prepare-register-build-artifacts
+      if: ${{ steps.imgbuild.outputs.artifact-ref != '' }}
       name: Prepare to register build artifacts
-      uses: docker://alpine:3.22
-      run: |         
-        destinations=$(echo "$DESTINATION" | awk -F',' '{for(i=1;i<=NF;i++){gsub(/^[ \t\r\n]+|[ \t\r\n]+$/, "", $i); printf "\"%s\"%s", $i, (i<NF?",":"")}}' | sed 's/^/[/; s/$/]/')
-
-        artifact_json="["
-
-        for destination in $(echo "$destinations" | tr -d '[]"' | tr ',' '\n'); do        
-          artifactName=""
-          artifactVersion=""
-          if [[ "$destination" == *"@"* ]]; then
-            # Digest reference
-            artifactName="${destination%@*}"
-            artifactVersion="${destination##*@}"
-          elif [[ "$destination" == *":"* ]]; then
-            # Tagged reference
-            artifactName="${destination%%:*}"
-            artifactVersion="${destination##*:}"
-          else
-            # Without tag or digest, assume latest
-            artifactName="destination"
-            artifactVersion="latest"
-          fi
-
-          if [ -n "$ARTIFACT_NAME" ]; then
-            artifactName="$ARTIFACT_NAME"
-          fi
-
-          artifactDigest=""
-          if [ -n "$IMAGE_REF" ]; then
-            artifactDigest="${IMAGE_REF#*@}"
-          fi
-  
-          artifact="{\"name\":\"${artifactName}\",\"version\":\"${artifactVersion}\",\"digest\":\"${artifactDigest}\",\"url\":\"$destination\", \"commit\":\"$COMMIT\",\"repositoryUrl\":\"$REPOSITORY_URL\",\"ref\":\"$REF\", \"componentId\":\"$COMPONENT_ID\", \"type\":\"docker\"}"
-          artifact_json="${artifact_json}${artifact},"
-        done
-
-        # Remove trailing comma and close JSON array
-        artifact_json="${artifact_json%,}]"
-
+      uses: docker://ghcr.io/jqlang/jq:1.8.1
+      run: |
+        
+        json=${{ steps.imgbuild.outputs.artifact-ref }}
+        
+        artifact_json=$(echo "$json" | jq \
+          --arg component "$COMPONENT_ID" \
+          --arg commit "$COMMIT" \
+          --arg repo "$REPOSITORY_URL" \
+          --arg ref "$REF" \
+          --arg artifactName "$ARTIFACT_NAME" \
+          --arg type "docker" '
+          map(
+            {
+              name: (if $artifactName != "" then $artifactName else .name end),
+              version: .version,
+              digest: .digest,
+              url: .url,
+              commit: $commit,
+              repositoryUrl: $repo,
+              ref: $ref,
+              componentId: $component,
+              type: $type
+            }
+          )
+        ')
+        
+        if ${VERBOSITY} == "debug" or ${VERBOSITY} == "trace" ; then
+          echo "Prepared artifact metadata: $artifact_json"
+        fi
+        
         # Store the final payload in output
-        echo "$artifact_json" > $CLOUDBEES_OUTPUTS/artifact-metadata
+        echo -n "$json" > $CLOUDBEES_OUTPUTS/artifact-metadata
 
       env:
-        DESTINATION: ${{ inputs.destination }}
         ARTIFACT_NAME: ${{ inputs.artifact-name }}
-        IMAGE_REF: ${{ steps.imgbuild.outputs.image }}
         COMMIT: ${{ inputs.commit }}
         REPOSITORY_URL: ${{ inputs.repository-url }}
         REF: ${{ inputs.ref }}
         COMPONENT_ID: ${{ inputs.component-id }}
+        VERBOSITY: ${{ inputs.verbosity }}
 
     - id: register-build-artifacts
       name: Register an artifact with the CloudBees Unify

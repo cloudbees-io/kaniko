@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/distribution/reference"
+
 	"github.com/cloudbees-io/registry-config/pkg/registries"
 )
 
@@ -89,12 +91,71 @@ func (k *Config) writeActionOutputs(outDir, digestFile string) error {
 	if err != nil {
 		return fmt.Errorf("write tag-digest output: %w", err)
 	}
-	// NOTE: if imageRef format is changed, NEED to update logic to fetch digest in action.yml
 	imageRef := fmt.Sprintf("%s:%s@%s", dest, tag, string(digest))
 	err = os.WriteFile(filepath.Join(outDir, "image"), []byte(imageRef), 0640)
 	if err != nil {
 		return fmt.Errorf("write image output: %w", err)
 	}
+	err = k.writeArtifactMetadata(outDir, string(digest))
+	if err != nil {
+		return fmt.Errorf("write artifact metadata: %w", err)
+	}
+	return nil
+}
+
+func (k *Config) writeArtifactMetadata(outDir string, digest string) error {
+	destinations := k.processDestinations()
+	if len(destinations) == 0 {
+		return fmt.Errorf("no destinations found for artifact metadata")
+	}
+	var artifacts []map[string]string
+	for _, destination := range destinations {
+		destination = strings.TrimSpace(destination)
+		if destination == "" {
+			continue
+		}
+
+		ref, err := reference.Parse(destination)
+		if err != nil {
+			return fmt.Errorf("failed to parse image reference '%s': %w", destination, err)
+		}
+
+		var imgName, imgVer string
+		// Check if the reference is a tagged or digest reference
+		switch ref := ref.(type) {
+		case reference.Tagged:
+			namedRef := ref.(reference.Named)
+			imgName = namedRef.Name()
+			imgVer = ref.Tag()
+		case reference.Digested:
+			namedRef := ref.(reference.Named)
+			imgName = namedRef.Name()
+			imgVer = ref.Digest().String()
+		case reference.Named:
+			imgName = ref.Name()
+			imgVer = "latest"
+		default:
+			return fmt.Errorf("unsupported destination type: %T for destination: %s\n", ref, destination)
+		}
+		artifact := map[string]string{
+			"url":     destination,
+			"name":    imgName,
+			"version": imgVer,
+			"digest":  digest,
+		}
+		artifacts = append(artifacts, artifact)
+	}
+	// marshal the artifacts to json
+	artifactData, err := json.Marshal(artifacts)
+	if err != nil {
+		return fmt.Errorf("failed to marshal artifact metadata: %w", err)
+	}
+	if k.Verbosity == "debug" || k.Verbosity == "trace" {
+		log.Printf("Artifact metadata: %s\n", string(artifactData))
+	}
+
+	err = os.WriteFile(filepath.Join(outDir, "artifact-ref"), artifactData, 0640)
+
 	return nil
 }
 
