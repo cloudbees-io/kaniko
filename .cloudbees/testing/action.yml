@@ -144,10 +144,10 @@ runs:
       if: ${{ steps.imgbuild.outputs.artifact-ref != '' }}
       name: Prepare to register build artifacts
       uses: docker://ghcr.io/jqlang/jq:1.8.1
-      run: |         
+      run: |
 
         json=${{ steps.imgbuild.outputs.artifact-ref }}
-  
+
         artifact_json=$(echo "$json" | jq \
           --arg component "$COMPONENT_ID" \
           --arg commit "$COMMIT" \
@@ -173,7 +173,7 @@ runs:
         if ${VERBOSITY} == "debug" or ${VERBOSITY} == "trace" ; then
           echo "Prepared artifact metadata: $artifact_json"
         fi
-        
+
         # Store the final payload in output
         echo -n "$json" > $CLOUDBEES_OUTPUTS/artifact-metadata
 
