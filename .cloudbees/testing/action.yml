@@ -179,7 +179,7 @@ runs:
         fi
 
         # Store the final payload in output
-        echo -n "$json" > $CLOUDBEES_OUTPUTS/artifact-metadata
+        echo -n "$artifact_json" > $CLOUDBEES_OUTPUTS/artifact-metadata
 
       env:
         ARTIFACT_NAME: ${{ inputs.artifact-name }}
