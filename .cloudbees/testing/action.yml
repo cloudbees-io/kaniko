@@ -143,12 +143,12 @@ runs:
     - id: prepare-register-build-artifacts
       if: ${{ steps.imgbuild.outputs.artifact-ref != '' }}
       name: Prepare to register build artifacts
-      uses: docker://ghcr.io/jqlang/jq:1.8.1
+      uses: docker://esolang/jq:latest
       run: |
 
         json=${{ steps.imgbuild.outputs.artifact-ref }}
 
-        artifact_json=$(echo "$json" | jq \
+        artifact_json=$(echo "$json" | /usr/bin/jq \
           --arg component "$COMPONENT_ID" \
           --arg commit "$COMMIT" \
           --arg repo "$REPOSITORY_URL" \
