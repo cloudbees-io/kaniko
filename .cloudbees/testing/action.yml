@@ -148,6 +148,10 @@ runs:
 
         json=${{ steps.imgbuild.outputs.artifact-ref }}
 
+        if ${VERBOSITY} == "debug" or ${VERBOSITY} == "trace" ; then
+          echo "Received artifact reference JSON: $json"
+        fi
+
         artifact_json=$(echo "$json" | /usr/bin/jq \
           --arg component "$COMPONENT_ID" \
           --arg commit "$COMMIT" \
