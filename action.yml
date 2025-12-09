@@ -146,7 +146,7 @@ runs:
       uses: docker://esolang/jq:latest
       run: |
 
-        json=${{ steps.imgbuild.outputs.artifact-ref }}
+        json="${{ steps.imgbuild.outputs.artifact-ref }}"
 
         if [ "$VERBOSITY" = "debug" ] || [ "$VERBOSITY" = "trace" ]; then
           echo "Received artifact reference JSON: $json"
