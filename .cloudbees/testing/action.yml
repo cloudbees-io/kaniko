@@ -148,7 +148,7 @@ runs:
 
         json=${{ steps.imgbuild.outputs.artifact-ref }}
 
-        if ${VERBOSITY} == "debug" or ${VERBOSITY} == "trace" ; then
+        if [ "$VERBOSITY" = "debug" ] || [ "$VERBOSITY" = "trace" ]; then
           echo "Received artifact reference JSON: $json"
         fi
 
@@ -174,7 +174,7 @@ runs:
           )
         ')
 
-        if ${VERBOSITY} == "debug" or ${VERBOSITY} == "trace" ; then
+        if [ "$VERBOSITY" = "debug" ] || [ "$VERBOSITY" = "trace" ]; then
           echo "Prepared artifact metadata: $artifact_json"
         fi
 
