@@ -138,7 +138,6 @@ runs:
         INPUT_ARTIFACT_NAME: ${{ inputs.artifact-name }}
         INPUT_COMPONENT_ID: ${{ inputs.component-id }}
 
-
     - id: prepare-register-build-artifacts
       if: ${{ steps.imgbuild.outputs.artifact-ref != '' }}
       name: Prepare to register build artifacts
