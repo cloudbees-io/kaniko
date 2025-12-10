@@ -234,7 +234,16 @@ func (k *Config) lookupBinary() {
 }
 
 func (k *Config) env() []string {
-	return os.Environ()
+	env := os.Environ()
+
+	// If a KanikoDir was configured (via --kaniko-dir in our wrapper), KANIKO_DIR needs to be set.
+	// Due to chain-guard limitation https://github.com/chainguard-forks/kaniko/blob/07ed3b190c5beb1df4ce043128942d07d5dcf9f8/pkg/config/init.go#L29
+	if k.KanikoDir != "" {
+		const prefix = "KANIKO_DIR="
+		env = append(env, prefix+k.KanikoDir)
+	}
+
+	return env
 }
 
 func validateVerbosity(verbosity string) error {
