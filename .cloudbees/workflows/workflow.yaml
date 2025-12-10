@@ -48,7 +48,7 @@ jobs:
         destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ cloudbees.scm.sha }},020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:latest
         labels: maintainer=sdp-pod-3,email=engineering@cloudbees.io
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
-        #kaniko-dir: "/cloudbees-kaniko-action"
+        kaniko-dir: "/cloudbees-kaniko-action"
 
     - name: Run TruffleHog Container Action
       uses: cloudbees-io/trufflehog-secret-scan-container@v1
@@ -83,7 +83,7 @@ jobs:
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
         verbosity: debug
         tar-path: ${{ cloudbees.home }}/image.tar
-        #kaniko-dir: "/cloudbees-kaniko-action"
+        kaniko-dir: "/cloudbees-kaniko-action"
 
     - name: Check test image
       uses: docker://gcr.io/go-containerregistry/crane:debug
