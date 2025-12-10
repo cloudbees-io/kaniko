@@ -48,6 +48,15 @@ jobs:
         destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ cloudbees.scm.sha }},020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:latest
         labels: maintainer=sdp-pod-3,email=engineering@cloudbees.io
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
+        kaniko-dir: "/cloudbees-kaniko-action"
+
+    - name: Build image
+      id: build-image-without-kaniko-dir
+      uses: cloudbees-io/kaniko@v1.1.23
+      with:
+        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ cloudbees.scm.sha }},020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:latest
+        labels: maintainer=sdp-pod-3,email=engineering@cloudbees.io
+        registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
         #kaniko-dir: "/cloudbees-kaniko-action"
 
     - name: Run TruffleHog Container Action
@@ -84,17 +93,6 @@ jobs:
         verbosity: debug
         tar-path: ${{ cloudbees.home }}/image.tar
         kaniko-dir: "/cloudbees-kaniko-test"
-
-    - name: Build without kaniko-dir
-      id: build-without-kaniko-dir
-      uses: ./.cloudbees/testing
-      with:
-        context: ./.cloudbees/testing
-        dockerfile: Dockerfile-test
-        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}
-        skip-default-registry-fallback: 'true'
-        registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
-        verbosity: debug
 
     - name: Check test image
       uses: docker://gcr.io/go-containerregistry/crane:debug
