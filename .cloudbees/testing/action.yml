@@ -76,7 +76,7 @@ inputs:
       Path to the Kaniko working directory. If set, it is passed as --kaniko-dir to the executor
       and exported as KANIKO_DIR so Kaniko sees both the flag and the environment variable.
     required: false
-    default: ''
+    default: 'cloudbees-kaniko-action'
 
 outputs:
   digest:
