@@ -314,8 +314,6 @@ func (k *Config) cmdBuilder(digestFile string) (*exec.Cmd, error) {
 	// propagate it to the kaniko executor.
 	if k.KanikoDir != "" {
 		cmdArgs = append(cmdArgs, "--kaniko-dir", k.KanikoDir)
-	} else {
-		cmdArgs = append(cmdArgs, "--kaniko-dir", k.KanikoDir)
 	}
 
 	kanikoCmd := exec.CommandContext(k.Context, k.ExecutablePath, cmdArgs...)

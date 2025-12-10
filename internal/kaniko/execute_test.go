@@ -114,8 +114,6 @@ func Test_cmdBuilder(t *testing.T) {
 		"--skip-default-registry-fallback",
 		"--target",
 		"final-stage",
-		"--kaniko-dir",
-		"",
 	}
 	expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 
@@ -156,8 +154,6 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 			"/tmp/kaniko-test-digest-file",
 			"--target", // Add target to expected arguments
 			"final-stage",
-			"--kaniko-dir",
-			"",
 		}
 		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 		require.Equal(t, expectedCmd.Args, cmd.Args)
@@ -191,8 +187,6 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 			"/tmp/kaniko-test-digest-file",
 			"--target", // Add target to expected arguments
 			"final-stage",
-			"--kaniko-dir",
-			"",
 		}
 		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 		require.Equal(t, expectedCmd.Args, cmd.Args)
@@ -225,8 +219,6 @@ func Test_CmdRegistryMirrors(t *testing.T) {
 			"/tmp/kaniko-test-digest-file",
 			"--target", // Add target to expected arguments
 			"final-stage",
-			"--kaniko-dir",
-			"",
 		}
 
 		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
@@ -270,8 +262,6 @@ func Test_CmdRegistryMaps(t *testing.T) {
 			"/tmp/kaniko-test-digest-file",
 			"--target", // Add target to expected arguments
 			"final-stage",
-			"--kaniko-dir",
-			"",
 		}
 		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 		require.Equal(t, expectedCmd.Args, cmd.Args)
@@ -304,8 +294,6 @@ func Test_CmdRegistryMaps(t *testing.T) {
 			"/tmp/kaniko-test-digest-file",
 			"--target", // Add target to expected arguments
 			"final-stage",
-			"--kaniko-dir",
-			"",
 		}
 		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 		require.Equal(t, expectedCmd.Args, cmd.Args)
@@ -346,8 +334,6 @@ func Test_CmdRegistryMaps(t *testing.T) {
 			"/tmp/kaniko-test-digest-file",
 			"--target", // Add target to expected arguments
 			"final-stage",
-			"--kaniko-dir",
-			"",
 		}
 		expectedCmd := exec.CommandContext(ctx, "/kaniko/executor", expectedArgs...)
 		require.Equal(t, expectedCmd.Args, cmd.Args)
