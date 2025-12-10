@@ -234,7 +234,14 @@ func (k *Config) lookupBinary() {
 }
 
 func (k *Config) env() []string {
-	return os.Environ()
+	env := os.Environ()
+
+	if k.KanikoDir != "" {
+		const prefix = "KANIKO_DIR="
+		env = append(env, prefix+k.KanikoDir)
+	}
+
+	return env
 }
 
 func validateVerbosity(verbosity string) error {

@@ -137,7 +137,6 @@ runs:
         INPUT_REF: ${{ inputs.ref }}
         INPUT_ARTIFACT_NAME: ${{ inputs.artifact-name }}
         INPUT_COMPONENT_ID: ${{ inputs.component-id }}
-        KANIKO_DIR: ${{ inputs.kaniko-dir }}
 
     - id: prepare-register-build-artifacts
       if: ${{ steps.imgbuild.outputs.artifact-ref != '' }}
