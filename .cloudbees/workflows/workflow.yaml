@@ -72,21 +72,8 @@ jobs:
     - name: Configure container registry for ECR
       uses: cloudbees-io/configure-ecr-credentials@v1
 
-#    - name: Build test image
-#      id: build
-#      uses: ./.cloudbees/testing
-#      with:
-#        context: ./.cloudbees/testing
-#        dockerfile: Dockerfile-test
-#        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}
-#        skip-default-registry-fallback: 'true'
-#        registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
-#        verbosity: debug
-#        tar-path: ${{ cloudbees.home }}/image.tar
-#        kaniko-dir: "/cloudbees-kaniko-test"
-
-    - name: Build test image without kaniko-dir
-      id: build-without-kaniko-dir
+    - name: Build test image
+      id: build
       uses: ./.cloudbees/testing
       with:
         context: ./.cloudbees/testing
@@ -95,6 +82,19 @@ jobs:
         skip-default-registry-fallback: 'true'
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
         verbosity: debug
+        tar-path: ${{ cloudbees.home }}/image.tar
+        #kaniko-dir: "/cloudbees-kaniko-test"
+
+#    - name: Build test image without kaniko-dir
+#      id: build-without-kaniko-dir
+#      uses: ./.cloudbees/testing
+#      with:
+#        context: ./.cloudbees/testing
+#        dockerfile: Dockerfile-test
+#        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}
+#        skip-default-registry-fallback: 'true'
+#        registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
+#        verbosity: debug
 
     - name: Check test image
       uses: docker://gcr.io/go-containerregistry/crane:debug
