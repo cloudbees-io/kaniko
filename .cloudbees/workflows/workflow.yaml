@@ -50,7 +50,7 @@ jobs:
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
         kaniko-dir: "/cloudbees-kaniko-action"
 
-    - name: Build image
+    - name: Build image without kaniko-dir
       id: build-image-without-kaniko-dir
       uses: cloudbees-io/kaniko@v1.1.23
       with:
