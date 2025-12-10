@@ -74,9 +74,8 @@ inputs:
   kaniko-dir:
     description: >
       Path to the Kaniko working directory. If set, it is passed as --kaniko-dir to the executor
-      and exported as KANIKO_DIR so Kaniko sees both the flag and the environment variable.
+      then KANIKO_DIR will be set as environment variable.
     required: false
-    default: ''
 
 outputs:
   digest:
@@ -138,7 +137,6 @@ runs:
         INPUT_REF: ${{ inputs.ref }}
         INPUT_ARTIFACT_NAME: ${{ inputs.artifact-name }}
         INPUT_COMPONENT_ID: ${{ inputs.component-id }}
-        KANIKO_DIR: ${{ inputs.kaniko-dir }}
 
     - id: prepare-register-build-artifacts
       if: ${{ steps.imgbuild.outputs.artifact-ref != '' }}
