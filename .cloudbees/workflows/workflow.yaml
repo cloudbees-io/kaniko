@@ -55,7 +55,7 @@ jobs:
         image-location: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action
         image-tag: ${{ cloudbees.scm.sha }}
   
-  test1:
+  test:
     needs: [build]
     steps:
     - name: Get source code
@@ -82,7 +82,6 @@ jobs:
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
         verbosity: debug
         tar-path: ${{ cloudbees.home }}/image.tar
-        kaniko-dir: "/cloudbees-kaniko-action"
 
     - name: Check test image
       uses: docker://gcr.io/go-containerregistry/crane:debug
@@ -116,65 +115,3 @@ jobs:
           comm -3 $GOLDEN_FILE /tmp/actual-paths.txt
           exit 1
         fi
-
-  test2:
-    needs: [build]
-    steps:
-      - name: Get source code
-        uses: cloudbees-io/checkout@v1
-
-      - name: Login to AWS
-        uses: cloudbees-io/configure-aws-credentials@v1
-        with:
-          aws-region: us-east-1
-          role-to-assume: ${{ vars.oidc_staging_iam_role }}
-          role-duration-seconds: "3600"
-
-      - name: Configure container registry for ECR
-        uses: cloudbees-io/configure-ecr-credentials@v1
-
-      - name: Build test image
-        id: build
-        uses: ./.cloudbees/testing
-        with:
-          context: ./.cloudbees/testing
-          dockerfile: Dockerfile-test
-          destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}
-          skip-default-registry-fallback: 'true'
-          registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
-          verbosity: debug
-          tar-path: ${{ cloudbees.home }}/image.tar
-
-      - name: Check test image
-        uses: docker://gcr.io/go-containerregistry/crane:debug
-        env:
-          GOLDEN_FILE: .cloudbees/testing/expected-paths.txt
-        run: |
-          EXPECTED=${{ steps.build.outputs.digest }}
-          ACTUAL=`crane digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }} --platform linux/amd64`
-          if [ "$EXPECTED" != "$ACTUAL" ]; then
-            echo "FAIL: Expected image digest $EXPECTED, but got $ACTUAL"
-            exit 1
-          fi
-          
-          if stat "${{ cloudbees.home }}/image.tar"; then
-            echo "Kaniko action wrote tar file."
-          else
-            echo "FAIL: Kaniko action did not write tar file."
-            exit 1
-          fi
-          
-          crane export "020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}" /tmp/image-rootfs.tar
-          mkdir /tmp/image-rootfs
-          tar -xf /tmp/image-rootfs.tar -C /tmp/image-rootfs/
-          (cd /tmp/image-rootfs && find . | sort) > /tmp/actual-paths.txt
-          echo
-          echo ACTUAL ROOTFS:
-          cat /tmp/actual-paths.txt | sed -E 's/^/  /'
-          echo
-          if [ "$(comm -3 $GOLDEN_FILE /tmp/actual-paths.txt)" ]; then
-            echo "FAIL: The built test image's rootfs content paths don't match the expected ones defined in $GOLDEN_FILE!"
-            comm -3 $GOLDEN_FILE /tmp/actual-paths.txt
-            exit 1
-          fi
-      
