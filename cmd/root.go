@@ -30,11 +30,7 @@ func run(command *cobra.Command, args []string) error {
 		return fmt.Errorf("unknown arguments: %v", args)
 	}
 
-	// We expect the caller (action.yaml) to set both:
-	//   - the --kaniko-dir flag (parsed into cfg.KanikoDir)
-	//   - the KANIKO_DIR environment variable
-	//
-	// If cfg.KanikoDir is empty, we just let Kaniko use its default directory.
+	// Print the Kaniko directory if specified
 	if cfg.KanikoDir != "" {
 		fmt.Fprintf(os.Stderr, "Using kaniko directory: %s\n", cfg.KanikoDir)
 	}

@@ -234,6 +234,25 @@ func (k *Config) lookupBinary() {
 }
 
 func (k *Config) env() []string {
+	// If no KanikoDir was configured, just return the current environment.
+	if k.KanikoDir == "" {
+		return os.Environ()
+	}
+
+	// Trimmed value is used to detect whitespace-only input.
+	if strings.TrimSpace(k.KanikoDir) == "" {
+		// Flag was set but contains only whitespace.
+		// Do not set KANIKO_DIR, but warn the user.
+		log.Printf("warning: kaniko-dir value contains only whitespace; KANIKO_DIR environment variable will not be set")
+		return os.Environ()
+	}
+
+	// If a KanikoDir was configured, KANIKO_DIR needs to be set.
+	// Due to chainguard limitation https://github.com/chainguard-forks/kaniko/blob/07ed3b190c5beb1df4ce043128942d07d5dcf9f8/pkg/config/init.go#L29
+	if err := os.Setenv("KANIKO_DIR", k.KanikoDir); err != nil {
+		log.Printf("warning: failed to set KANIKO_DIR environment variable: %v", err)
+	}
+
 	return os.Environ()
 }
 
