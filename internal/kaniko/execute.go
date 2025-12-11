@@ -251,7 +251,6 @@ func (k *Config) env() []string {
 	// Due to chainguard limitation https://github.com/chainguard-forks/kaniko/blob/07ed3b190c5beb1df4ce043128942d07d5dcf9f8/pkg/config/init.go#L29
 	if err := os.Setenv("KANIKO_DIR", k.KanikoDir); err != nil {
 		log.Printf("warning: failed to set KANIKO_DIR environment variable: %v", err)
-		return os.Environ()
 	}
 
 	return os.Environ()
