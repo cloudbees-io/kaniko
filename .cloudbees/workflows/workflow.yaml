@@ -83,7 +83,7 @@ jobs:
         verbosity: debug
         tar-path: ${{ cloudbees.home }}/image.tar
 
-    - name: Build test image
+    - name: Build test image with kaniko-dir
       id: build-with-kaniko-dir
       uses: ./.cloudbees/testing
       with:
