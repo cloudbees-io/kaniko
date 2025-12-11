@@ -74,7 +74,7 @@ inputs:
   kaniko-dir:
     description: >
       Path to the Kaniko working directory. If set, it is passed as --kaniko-dir to the executor
-      then KANIKO_DIR will be set as environment variable.
+      and exported as KANIKO_DIR so Kaniko sees both the flag and the environment variable.
     required: false
 
 outputs:
