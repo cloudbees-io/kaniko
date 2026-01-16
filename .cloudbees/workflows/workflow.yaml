@@ -20,7 +20,7 @@ jobs:
       uses: docker://amazon/aws-cli:2.12.6
       run: |
         TESTING_SHA=$(cat .cloudbees/testing/action.yml | sha1sum)
-        ORIGINAL_SHA=$(sed -e 's|docker://public.ecr.aws/l7o7z1g8/actions/|docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/|g' < action.yml | sha1sum)
+        ORIGINAL_SHA=$(sed -e 's|docker://public.ecr.aws/l7o7z1g8/actions/kaniko-action|docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action|g' < action.yml | sha1sum)
         if [ "${TESTING_SHA}" != "${ORIGINAL_SHA}" ]; then
           echo "Original action different from testing action"
           exit 1
