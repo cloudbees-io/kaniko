@@ -14,7 +14,7 @@ jobs:
   build:
     steps:
     - name: Get source code
-      uses: cloudbees-io/checkout@v1
+      uses: cloudbees-io/checkout@v1.1.25
 
     - name: Validate action
       uses: docker://amazon/aws-cli:2.12.6
