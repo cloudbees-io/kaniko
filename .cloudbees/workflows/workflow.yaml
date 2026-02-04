@@ -93,6 +93,15 @@ jobs:
         verbosity: debug
         tar-path: ${{ cloudbees.home }}/image.tar
 
+    - id: slsa-attestation-test
+      name: Generate SLSA attestation for test image
+      uses: https://github.com/calculi-corp/slsa-attestation@v1
+      with:
+        image-digest: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test@${{ steps.build.outputs.digest }}
+        aws-role-to-assume: ${{ vars.oidc_staging_iam_role }}
+        aws-region: us-east-1
+        aws-kms-alias: cbp-dev-kms-key-cosign
+
     - name: Build test image with kaniko-dir
       id: build-with-kaniko-dir
       uses: ./.cloudbees/testing
@@ -105,6 +114,15 @@ jobs:
         verbosity: debug
         tar-path: ${{ cloudbees.home }}/image.tar
         kaniko-dir: "/cloudbees-kaniko-action-test"
+
+    - id: slsa-attestation-test-kaniko-dir
+      name: Generate SLSA attestation for test image with kaniko-dir
+      uses: https://github.com/calculi-corp/slsa-attestation@v1
+      with:
+        image-digest: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test@${{ steps.build-with-kaniko-dir.outputs.digest }}
+        aws-role-to-assume: ${{ vars.oidc_staging_iam_role }}
+        aws-region: us-east-1
+        aws-kms-alias: cbp-dev-kms-key-cosign
 
     - name: Check test image
       uses: docker://gcr.io/go-containerregistry/crane:debug
