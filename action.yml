@@ -141,7 +141,7 @@ runs:
     - id: prepare-register-build-artifacts
       if: ${{ steps.imgbuild.outputs.artifact-ref != '' }}
       name: Prepare to register build artifacts
-      uses: docker://public.ecr.aws/l7o7z1g8/actions/cb-utils:main-0.1.9
+      uses: docker://public.ecr.aws/l7o7z1g8/actions/cb-utils:main-0.1.59
       run: |
 
         json='${{ steps.imgbuild.outputs.artifact-ref }}'
