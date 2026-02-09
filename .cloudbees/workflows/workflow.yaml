@@ -45,11 +45,19 @@ jobs:
       id: build-image
       uses: cloudbees-io/kaniko@v1
       with:
-        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ cloudbees.scm.sha }},020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:latest
+        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ cloudbees.scm.sha }}${{ cloudbees.scm.branch == 'main' && ',020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:latest' || ''}}
         labels: maintainer=sdp-pod-3,email=engineering@cloudbees.io
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
         verbosity: debug
         kaniko-dir: "/cloudbees-kaniko-action"
+    - id: slsa-attestation
+      name: Generate SLSA attestation
+      uses: https://github.com/calculi-corp/slsa-attestation@v1
+      with:
+        image-digest: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action@${{ steps.build-image.outputs.digest }}
+        aws-role-to-assume: ${{ vars.oidc_staging_iam_role }}
+        aws-region: us-east-1
+        aws-kms-alias: cbp-dev-kms-key-cosign
 
     - name: Run TruffleHog Container Action
       uses: cloudbees-io/trufflehog-secret-scan-container@v1
@@ -79,11 +87,20 @@ jobs:
       with:
         context: ./.cloudbees/testing
         dockerfile: Dockerfile-test
-        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}
+        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}${{ cloudbees.scm.branch == 'main' && ',020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:latest' || '' }}
         skip-default-registry-fallback: 'true'
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
         verbosity: debug
         tar-path: ${{ cloudbees.home }}/image.tar
+
+    - id: slsa-attestation-test
+      name: Generate SLSA attestation for test image
+      uses: https://github.com/calculi-corp/slsa-attestation@v1
+      with:
+        image-digest: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test@${{ steps.build.outputs.digest }}
+        aws-role-to-assume: ${{ vars.oidc_staging_iam_role }}
+        aws-region: us-east-1
+        aws-kms-alias: cbp-dev-kms-key-cosign
 
     - name: Build test image with kaniko-dir
       id: build-with-kaniko-dir
@@ -91,12 +108,21 @@ jobs:
       with:
         context: ./.cloudbees/testing
         dockerfile: Dockerfile-test
-        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha}}-kaniko-dir
+        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha}}-kaniko-dir${{ cloudbees.scm.branch == 'main' && ',020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:latest' || '' }}
         skip-default-registry-fallback: 'true'
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
         verbosity: debug
         tar-path: ${{ cloudbees.home }}/image.tar
         kaniko-dir: "/cloudbees-kaniko-action-test"
+
+    - id: slsa-attestation-test-kaniko-dir
+      name: Generate SLSA attestation for test image with kaniko-dir
+      uses: https://github.com/calculi-corp/slsa-attestation@v1
+      with:
+        image-digest: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test@${{ steps.build-with-kaniko-dir.outputs.digest }}
+        aws-role-to-assume: ${{ vars.oidc_staging_iam_role }}
+        aws-region: us-east-1
+        aws-kms-alias: cbp-dev-kms-key-cosign
 
     - name: Check test image
       uses: docker://gcr.io/go-containerregistry/crane:debug
