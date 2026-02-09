@@ -87,7 +87,7 @@ jobs:
       with:
         context: ./.cloudbees/testing
         dockerfile: Dockerfile-test
-        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}
+        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha }}${{ cloudbees.scm.branch == 'main' && ',020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:latest' || '' }}
         skip-default-registry-fallback: 'true'
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
         verbosity: debug
@@ -108,7 +108,7 @@ jobs:
       with:
         context: ./.cloudbees/testing
         dockerfile: Dockerfile-test
-        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha}}-kaniko-dir
+        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:${{ cloudbees.scm.sha}}-kaniko-dir${{ cloudbees.scm.branch == 'main' && ',020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action-test:latest' || '' }}
         skip-default-registry-fallback: 'true'
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
         verbosity: debug
