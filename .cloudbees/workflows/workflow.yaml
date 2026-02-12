@@ -109,13 +109,21 @@ jobs:
           --region us-east-1 \
           --image-ids imageTag=${{ cloudbees.scm.sha }} \
           --query 'imageDetails[0].imageTags' \
-          --output json 2>/dev/null || echo "[]")
+          --output text 2>/dev/null || echo "NONE")
         
         echo "Tags found for SHA ${{ cloudbees.scm.sha }}:"
-        echo "$TAGS" | jq -r '.[]' | sed 's/^/  - /'
+        if [ "$TAGS" == "NONE" ]; then
+          echo "  No tags found"
+        else
+          echo "$TAGS" | tr '\t' '\n' | sed 's/^/  - /'
+        fi
         echo ""
         
-        HAS_LATEST=$(echo "$TAGS" | jq -r 'contains(["latest"])')
+        # Check if 'latest' is in the tags
+        HAS_LATEST="false"
+        if echo "$TAGS" | grep -qw "latest"; then
+          HAS_LATEST="true"
+        fi
         
         if [ "${{ cloudbees.scm.branch }}" == "main" ]; then
           if [ "$HAS_LATEST" == "true" ]; then
