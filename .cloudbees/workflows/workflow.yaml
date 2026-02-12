@@ -93,6 +93,48 @@ jobs:
         verbosity: debug
         tar-path: ${{ cloudbees.home }}/image.tar
 
+    - name: Verify latest tag logic (CBP-31461)
+      uses: docker://amazon/aws-cli:2.12.6
+      run: |
+        echo "=============================================="
+        echo "Verifying :latest tag behavior for CBP-31461"
+        echo "=============================================="
+        echo "Branch: ${{ cloudbees.scm.branch }}"
+        echo "SHA: ${{ cloudbees.scm.sha }}"
+        echo ""
+        
+        # Check what tags were pushed for this SHA
+        TAGS=$(aws ecr describe-images \
+          --repository-name actions/kaniko-action-test \
+          --region us-east-1 \
+          --image-ids imageTag=${{ cloudbees.scm.sha }} \
+          --query 'imageDetails[0].imageTags' \
+          --output json 2>/dev/null || echo "[]")
+        
+        echo "Tags found for SHA ${{ cloudbees.scm.sha }}:"
+        echo "$TAGS" | jq -r '.[]' | sed 's/^/  - /'
+        echo ""
+        
+        HAS_LATEST=$(echo "$TAGS" | jq -r 'contains(["latest"])')
+        
+        if [ "${{ cloudbees.scm.branch }}" == "main" ]; then
+          if [ "$HAS_LATEST" == "true" ]; then
+            echo "✓ PASS: main branch build correctly has :latest tag"
+          else
+            echo "✗ FAIL: main branch build should have :latest tag!"
+            exit 1
+          fi
+        else
+          if [ "$HAS_LATEST" == "true" ]; then
+            echo "✗ FAIL: Branch build should NOT have :latest tag!"
+            echo "✗ This means CBP-31461 is NOT fixed!"
+            exit 1
+          else
+            echo "✓ PASS: Branch build correctly does NOT have :latest tag"
+          fi
+        fi
+        echo "=============================================="
+
     - id: slsa-attestation-test
       name: Generate SLSA attestation for test image
       uses: https://github.com/calculi-corp/slsa-attestation@v1
