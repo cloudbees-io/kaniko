@@ -110,7 +110,7 @@ runs:
   steps:
     - id: imgbuild
       name: Build, publish, and optionally save Docker image as a tar archive.
-      uses: docker://public.ecr.aws/l7o7z1g8/actions/kaniko-action:${{ action.scm.sha }}
+      uses: docker://public.ecr.aws/l7o7z1g8/actions/kaniko-action:003a7b24f2c753c5364b577b580a2300a0f283b7
       with:
         entrypoint: /kaniko/cloudbees-kaniko-action
         args: |
