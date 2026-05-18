@@ -109,7 +109,7 @@ runs:
   using: composite
   steps:
     - id: imgbuild
-      name: Build, publish, and optionally save Docker image as a tar archive.
+      name: Build, publish, and optionally save Docker image as a tar archive
       uses: docker://public.ecr.aws/l7o7z1g8/actions/kaniko-action:${{ action.scm.sha }}
       with:
         entrypoint: /kaniko/cloudbees-kaniko-action
@@ -188,7 +188,7 @@ runs:
         VERBOSITY: ${{ inputs.verbosity }}
 
     - id: register-build-artifacts
-      name: Register an artifact with the CloudBees Unify
+      name: Register an artifact with CloudBees Unify
       uses: cloudbees-io/register-build-artifacts@v1
       with:
         artifact-metadata: ${{ steps.prepare-register-build-artifacts.outputs.artifact-metadata }}
