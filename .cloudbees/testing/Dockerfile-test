@@ -1,7 +1,7 @@
 FROM alpine:3.21 AS build
 RUN echo test > /test-file
 
-FROM docker.io/mgoltzsche/podman:5.4.0-minimal AS podman
+FROM docker.io/mgoltzsche/podman:5.4.2-minimal AS podman
 
 FROM scratch
 COPY --from=build /test-file /test-file
