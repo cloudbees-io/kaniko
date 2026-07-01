@@ -15,10 +15,10 @@ jobs:
   build:
     steps:
     - name: Get source code
-      uses: cloudbees-io/checkout@v1
+      uses: cloudbees-io/checkout@v2
 
     - name: Validate action
-      uses: docker://amazon/aws-cli:2.12.6
+      uses: docker://amazon/aws-cli:2.35.13
       run: |
         TESTING_SHA=$(cat .cloudbees/testing/action.yml | sha1sum)
         ORIGINAL_SHA=$(sed -e 's|docker://public.ecr.aws/l7o7z1g8/actions/|docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/|g' < action.yml | sha1sum)
@@ -28,7 +28,7 @@ jobs:
         fi
 
     - name: Unit tests
-      uses: docker://golang:1.26.2
+      uses: docker://golang:1.26.4
       run: |
         go test --cover ./...
 
@@ -70,7 +70,7 @@ jobs:
     needs: [build]
     steps:
     - name: Get source code
-      uses: cloudbees-io/checkout@v1
+      uses: cloudbees-io/checkout@v2
 
     - name: Login to AWS
       uses: cloudbees-io/configure-aws-credentials@v1
