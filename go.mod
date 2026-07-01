@@ -5,7 +5,7 @@ go 1.26.2
 require (
 	github.com/cloudbees-io/registry-config v0.0.0-20251119202030-7513ed84c737
 	github.com/distribution/reference v0.6.0
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 )
 
