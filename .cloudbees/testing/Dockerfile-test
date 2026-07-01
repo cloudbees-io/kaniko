@@ -1,4 +1,4 @@
-FROM alpine:3.21 AS build
+FROM alpine:3.24 AS build
 RUN echo test > /test-file
 
 FROM docker.io/mgoltzsche/podman:5.4.0-minimal AS podman
